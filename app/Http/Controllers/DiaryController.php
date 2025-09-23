@@ -11,13 +11,11 @@ class DiaryController extends Controller
     {
         $request->validate([
             'content' => 'required|string',
-            'diary_password' => 'required|string|min:6',
         ]);
 
         $entry = DiaryEntry::create([
             'user_id' => $request->user()->id,
             'content' => $request->content,
-            'diary_password' => Hash::make($request->diary_password),
         ]);
 
         return response()->json([
@@ -32,25 +30,34 @@ class DiaryController extends Controller
             'diary_password' => 'required|string',
         ]);
 
-        $entries = DiaryEntry::where('user_id', $request->user()->id)->get();
+        $user = $request->user();
+        $hash = optional($user->profile)->diary_password_hash;
 
-        foreach ($entries as $entry) {
-            if (!Hash::check($request->diary_password, $entry->diary_password)) {
-                return response()->json(['message' => 'Senha incorreta!'], 403);
-            }
+        if (!$hash || !Hash::check($request->diary_password, $hash)) {
+            return response()->json(['message' => 'Senha do diário inválida'], 403);
         }
+
+        $entries = DiaryEntry::where('user_id', $user->id)
+            ->latest('created_at')
+            ->get(); // se quiser paginação: ->paginate(20);
 
         return response()->json($entries);
     }
 
     public function destroy(Request $request, $id)
     {
-        $entry = DiaryEntry::where('user_id', $request->user()->id)->findOrFail($id);
+        $request->validate([
+            'diary_password' => 'required|string',
+        ]);
 
-        if (!Hash::check($request->diary_password, $entry->diary_password)) {
-            return response()->json(['message' => 'Senha incorreta!'], 403);
+        $user = $request->user();
+        $hash = optional($user->profile)->diary_password_hash;
+
+        if (!$hash || !Hash::check($request->diary_password, $hash)) {
+            return response()->json(['message' => 'Senha do diário inválida'], 403);
         }
 
+        $entry = DiaryEntry::where('user_id', $user->id)->findOrFail($id);
         $entry->delete();
 
         return response()->json(['message' => 'Entrada deletada com sucesso!']);

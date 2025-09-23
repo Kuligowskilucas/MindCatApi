@@ -20,9 +20,11 @@ Route::post('/login', [AuthController::class, 'login']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
     Route::get('/user', [AuthController::class, 'userProfile']);
     Route::put('/user/update', [UserController::class, 'update']);
     Route::delete('/user/delete', [UserController::class, 'destroy']);
+
     Route::post('/diary', [DiaryController::class, 'store']); 
     Route::get('/diary', [DiaryController::class, 'index']); 
     Route::delete('/diary/{id}', [DiaryController::class, 'destroy']);

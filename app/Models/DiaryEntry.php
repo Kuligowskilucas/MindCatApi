@@ -9,15 +9,9 @@ class DiaryEntry extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'content',
-        'diary_password',
-    ];
+    protected $fillable = ['user_id', 'content',];
 
-    protected $hidden = [
-        'diary_password',
-    ];
+    protected $hidden = [];
 
     public function user()
     {
