@@ -4,6 +4,9 @@ namespace App\Providers;
 
 // use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
+use App\Models\User;
+
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -21,6 +24,15 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Gate::define('admin', function (User $pro, User $pacient){
+            if($pro->role !== 'pro' || $pacient->role !== 'pacient'){
+                return false;
+            }
+
+            $linked = $pro->patients()->where('users.id', $pacient->id)->exists();
+            $consent = optional($pacient->profile)->consent_share_with_professional;
+
+            return $linked && $consent; 
+        });
     }
 }
