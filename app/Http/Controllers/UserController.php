@@ -9,6 +9,16 @@ use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
+
+    public function me(Request $request)
+    {
+        $user = $request->user()->load(['profile']);
+        if ($user->profile) {
+            unset($user->profile->diary_password_hash);
+        }
+        return response()->json($user);
+    }
+
     public function update(Request $request)
     {
         $user = $request->user();
