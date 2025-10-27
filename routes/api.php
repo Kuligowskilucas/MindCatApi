@@ -4,7 +4,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DiaryController;
+use App\Http\Controllers\MoodController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\LinkController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\PatientController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -35,4 +40,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/diary', [DiaryController::class, 'store']);
     Route::get('/diary', [DiaryController::class, 'index']);
     Route::delete('/diary/{id}', [DiaryController::class, 'destroy']);
+
+    Route::post('/moods', [MoodController::class, 'store']);
+    Route::get('/moods',  [MoodController::class, 'index']);
+    Route::delete('/moods/{id}', [MoodController::class, 'destroy']);
+
+    Route::post('/exercises/complete', [ExerciseController::class,'complete']);
+    Route::get('/exercises/history', [ExerciseController::class,'history']);
+
+    Route::middleware('role:pro')->group(function () {
+        Route::post('/links', [LinkController::class,'store']);
+        Route::get('/patients', [LinkController::class,'indexPatients']);
+        Route::delete('/links/{patientId}', [LinkController::class,'destroy']);
+
+        Route::post('/tasks', [TaskController::class,'store']);
+        Route::get('/tasks', [TaskController::class,'index'])->name('tasks.assigned');
+        Route::get('/patients/{id}/summary', [PatientController::class,'summary']);
+        Route::delete('/tasks/{task}', [TaskController::class,'destroy']);
+    });
 });

@@ -49,4 +49,11 @@ class MoodController extends Controller
         }
         return response()->json($q->paginate(30));
     }
+
+    public function destroy(Request $request, $id)
+    {
+        $row = UserMoodTracking::where('user_id', $request->user()->id)->findOrFail($id);
+        $row->delete(); // soft delete
+        return response()->json(['message' => 'Registro removido.']);
+    }
 }
