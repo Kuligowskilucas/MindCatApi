@@ -39,5 +39,27 @@ class LinkController extends Controller
   private function authorizeRole($user, $role){
     if ($user->role !== $role) abort(403);
   }
+
+  public function searchPatient(Request $request)
+{
+    $this->authorizeRole($request->user(), 'pro');
+
+    $request->validate(['email' => 'required|email']);
+
+    $patient = User::where('email', $request->email)
+                    ->where('role', 'patient')
+                    ->first();
+
+    if (!$patient) {
+        return response()->json(['message' => 'Paciente não encontrado.'], 404);
+    }
+
+    return response()->json([
+        'id' => $patient->id,
+        'name' => $patient->name,
+        'email' => $patient->email,
+        'consent' => optional($patient->profile)->consent_share_with_professional ?? false,
+    ]);
+}
 }
 

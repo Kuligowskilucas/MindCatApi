@@ -48,13 +48,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/exercises/complete', [ExerciseController::class,'complete']);
     Route::get('/exercises/history', [ExerciseController::class,'history']);
 
+    Route::get('/tasks', [TaskController::class,'index']);
+    Route::patch('/tasks/{task}/done', [TaskController::class,'markDone']);
+
     Route::middleware('role:pro')->group(function () {
         Route::post('/links', [LinkController::class,'store']);
         Route::get('/patients', [LinkController::class,'indexPatients']);
         Route::delete('/links/{patientId}', [LinkController::class,'destroy']);
-
+        Route::get('/patients/search', [LinkController::class, 'searchPatient']);
         Route::post('/tasks', [TaskController::class,'store']);
-        Route::get('/tasks', [TaskController::class,'index'])->name('tasks.assigned');
         Route::get('/patients/{id}/summary', [PatientController::class,'summary']);
         Route::delete('/tasks/{task}', [TaskController::class,'destroy']);
     });

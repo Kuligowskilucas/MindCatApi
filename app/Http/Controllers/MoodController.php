@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use App\Models\UserMoodTracking;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -15,7 +14,6 @@ class MoodController extends Controller
         $data = $request->validate([
             'mood_level' => 'required|integer|min:1|max:10',
             'mood_description' => 'nullable|string|max:255',
-            'recorded_at' => 'nullable|date',
         ]);
 
         $user = $request->user();

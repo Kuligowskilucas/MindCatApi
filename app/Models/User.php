@@ -50,4 +50,18 @@ class User extends Authenticatable
     public function activities(){
         return $this->hasMany(UserActivity::class, 'user_id');
     }
+
+    public function patients()
+    {
+        return $this->belongsToMany(User::class, 'pro_patient_links', 'pro_id', 'patient_id')
+                    ->wherePivot('active', true)
+                    ->withTimestamps();
+    }
+    
+    public function professionals()
+    {
+        return $this->belongsToMany(User::class, 'pro_patient_links', 'patient_id', 'pro_id')
+                    ->wherePivot('active', true)
+                    ->withTimestamps();
+    }
 }
