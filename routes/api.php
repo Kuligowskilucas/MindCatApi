@@ -10,6 +10,8 @@ use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\LinkController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\PasswordResetController;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -23,6 +25,9 @@ use App\Http\Controllers\PatientController;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+Route::post('/forgot-password', [PasswordResetController::class, 'sendCode']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

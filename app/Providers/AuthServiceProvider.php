@@ -24,14 +24,14 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::define('admin', function (User $pro, User $pacient){
-            if($pro->role !== 'pro' || $pacient->role !== 'pacient'){
+        Gate::define('view-patient', function (User $pro, User $patient){
+            if($pro->role !== 'pro' || $patient->role !== 'patient'){
                 return false;
             }
-
-            $linked = $pro->patients()->where('users.id', $pacient->id)->exists();
-            $consent = optional($pacient->profile)->consent_share_with_professional;
-
+        
+            $linked = $pro->patients()->where('users.id', $patient->id)->exists();
+            $consent = optional($patient->profile)->consent_share_with_professional;
+        
             return $linked && $consent; 
         });
     }
