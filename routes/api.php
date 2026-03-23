@@ -56,6 +56,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/tasks', [TaskController::class,'index']);
     Route::patch('/tasks/{task}/done', [TaskController::class,'markDone']);
 
+    Route::get('/my-professionals', [LinkController::class, 'indexProfessionals']);
+
     Route::middleware('role:pro')->group(function () {
         Route::post('/links', [LinkController::class,'store']);
         Route::get('/patients', [LinkController::class,'indexPatients']);

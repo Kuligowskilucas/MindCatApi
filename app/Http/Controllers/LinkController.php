@@ -61,5 +61,13 @@ class LinkController extends Controller
         'consent' => optional($patient->profile)->consent_share_with_professional ?? false,
     ]);
 }
+
+public function indexProfessionals(Request $request)
+{
+    if ($request->user()->role !== 'patient') abort(403);
+    return response()->json(
+        $request->user()->professionals()->select('users.id', 'users.name', 'users.email')->paginate(30)
+    );
+}
 }
 
