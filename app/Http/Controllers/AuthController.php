@@ -55,7 +55,12 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Login realizado com sucesso!',
-            'user' => $user,
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role,
+            ],
             'token' => $token,
         ], 200);
     }
@@ -63,11 +68,8 @@ class AuthController extends Controller
     //POST
     public function logout(Request $request)
     {
-        $request->user()->tokens()->delete();
-
-        return response()->json([
-            'message' => 'Logout realizado com sucesso!',
-        ]);
+        $request->user()->currentAccessToken()->delete();
+        return response()->json(['message' => 'Logout realizado com sucesso!']);
     }
 
     //GET

@@ -42,7 +42,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [UserController::class, 'me']);
 
     Route::post('/diary', [DiaryController::class, 'store']);
-    Route::get('/diary', [DiaryController::class, 'index']);
+    Route::post('/diary/list', [DiaryController::class, 'index']);
     Route::delete('/diary/{id}', [DiaryController::class, 'destroy']);
 
     Route::post('/moods', [MoodController::class, 'store']);

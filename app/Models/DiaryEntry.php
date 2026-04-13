@@ -11,6 +11,10 @@ class DiaryEntry extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = ['user_id', 'content',];
+    
+    protected $casts = [
+        'content' => 'encrypted',
+    ];
 
     protected $hidden = [];
 
