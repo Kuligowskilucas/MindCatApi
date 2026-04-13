@@ -2,56 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserMoodTracking;
-use Carbon\Carbon;
+use App\Http\Requests\Mood\IndexMoodRequest;
+use App\Http\Requests\Mood\StoreMoodRequest;
+use App\Services\MoodService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MoodController extends Controller
 {
-    
-    public function store(Request $request)
+    public function __construct(
+        private MoodService $moodService
+    ) {}
+
+    public function store(StoreMoodRequest $request): JsonResponse
     {
-        $data = $request->validate([
-            'mood_level' => 'required|integer|min:1|max:10',
-            'mood_description' => 'nullable|string|max:255',
-        ]);
+        $mood = $this->moodService->store(
+            $request->user(),
+            $request->validated()
+        );
 
-        $user = $request->user();
-        $day = Carbon::parse($data['recorded_at'] ?? now())->startOfDay();
-
-        $exists = UserMoodTracking::where('user_id',$user->id)->whereBetween('recorded_at', [$day, (clone $day)->endOfDay()])->exists();
-
-        if ($exists) {
-            return response()->json(['message' => 'O humor ja foi registrado hoje.'], 409);
-        }
-
-        $row = UserMoodTracking::create([
-            'user_id'=>$user->id,
-            'mood_level'=>$data['mood_level'],
-            'mood_description'=>$data['mood_description'] ?? null,
-            'recorded_at'=>$data['recorded_at'] ?? now(),
-        ]);
-
-        return response()->json($row, 201);
+        return response()->json($mood, 201);
     }
 
-    public function index(Request $request)
+    public function index(IndexMoodRequest $request): JsonResponse
     {
-        $request->validate(['from'=>'nullable|date','to'=>'nullable|date']);
-        $q = UserMoodTracking::where('user_id',$request->user()->id)->orderByDesc('recorded_at');
-        if($request->filled('from')){
-            $q->where('recorded_at','>=',$request->from);
-        }
-        if($request->filled('to')){
-            $q->where('recorded_at','<=',$request->to);
-        }
-        return response()->json($q->paginate(30));
+        $moods = $this->moodService->index(
+            $request->user(),
+            $request->input('from'),
+            $request->input('to')
+        );
+
+        return response()->json($moods);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, int $id): JsonResponse
     {
-        $row = UserMoodTracking::where('user_id', $request->user()->id)->findOrFail($id);
-        $row->delete(); // soft delete
-        return response()->json(['message' => 'Registro removido.']);
+        $this->moodService->destroy($request->user(), $id);
+
+        return response()->json([
+            'message' => 'Registro removido.',
+        ]);
     }
 }

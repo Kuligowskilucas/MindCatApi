@@ -49,8 +49,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/moods',  [MoodController::class, 'index']);
     Route::delete('/moods/{id}', [MoodController::class, 'destroy']);
 
-    Route::post('/exercises/complete', [ExerciseController::class,'complete']);
-    Route::get('/exercises/history', [ExerciseController::class,'history']);
+    // Route::post('/exercises/complete', [ExerciseController::class,'complete']);
+    // Route::get('/exercises/history', [ExerciseController::class,'history']);
 
     Route::get('/tasks', [TaskController::class,'index']);
     Route::patch('/tasks/{task}/done', [TaskController::class,'markDone']);

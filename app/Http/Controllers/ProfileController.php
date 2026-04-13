@@ -2,44 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Profile\SetDiaryPasswordRequest;
+use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Services\ProfileService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class ProfileController extends Controller
 {
-    
-    public function show(Request $request)
-    {
-        return response()->json($request->user()->profile()->firstOrCreate([]));
-    }
+    public function __construct(
+        private ProfileService $profileService
+    ) {}
 
-    public function update(Request $request)
+    public function show(Request $request): JsonResponse
     {
-        $data = $request->validate([
-            'consent_share_with_professional' => 'sometimes|boolean',
-        ]);
-
-        $profile = $request->user()->profile()->firstOrCreate([]);
-        $profile->fill($data)->save();
+        $profile = $this->profileService->getOrCreate($request->user());
 
         return response()->json($profile);
     }
 
-    public function setDiaryPassword(Request $request)
+    public function update(UpdateProfileRequest $request): JsonResponse
     {
-        $request->validate([
-            'current_password' => 'sometimes|string',
-            'new_password' => 'required|string|min:8|',
-        ]);
+        $profile = $this->profileService->update(
+            $request->user(),
+            $request->validated()
+        );
 
-        $profile = $request->user()->profile()->firstOrCreate([]);
-        if($profile->diary_password_hash){
-            if(!$request->filled('current_password') || !Hash::check($request->current_password, $profile->diary_password_hash)){
-                return response()->json(['message' => 'Senha atual inválida.'], 403);
-            }
-        }
-        $profile->diary_password_hash = Hash::make($request->new_password);
-        $profile->save();
-        return response()->json(['message' => 'Senha do diário atualizada com sucesso.']);
+        return response()->json($profile);
+    }
+
+    public function setDiaryPassword(SetDiaryPasswordRequest $request): JsonResponse
+    {
+        $this->profileService->setDiaryPassword(
+            $request->user(),
+            $request->input('current_password'),
+            $request->input('new_password')
+        );
+
+        return response()->json([
+            'message' => 'Senha do diário atualizada com sucesso.',
+        ]);
     }
 }

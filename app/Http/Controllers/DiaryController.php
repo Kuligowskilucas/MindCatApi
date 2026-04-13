@@ -1,65 +1,52 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\DiaryEntry;
+
+use App\Http\Requests\Diary\DiaryPasswordRequest;
+use App\Http\Requests\Diary\StoreDiaryRequest;
+use App\Services\DiaryService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class DiaryController extends Controller
 {
-    public function store(Request $request)
-    {
-        $request->validate([
-            'content' => 'required|string|max:50000',
-        ]);
+    public function __construct(
+        private DiaryService $diaryService
+    ) {}
 
-        $entry = DiaryEntry::create([
-            'user_id' => $request->user()->id,
-            'content' => $request->content,
-        ]);
+    public function store(StoreDiaryRequest $request): JsonResponse
+    {
+        $entry = $this->diaryService->store(
+            $request->user(),
+            $request->validated()['content']
+        );
 
         return response()->json([
             'message' => 'Entrada criada com sucesso!',
-            'entry' => $entry,
+            'entry'   => $entry,
         ], 201);
     }
 
-    public function index(Request $request)
+    public function index(DiaryPasswordRequest $request): JsonResponse
     {
-        $request->validate([
-            'diary_password' => 'required|string',
-        ]);
-
-        $user = $request->user();
-        $hash = optional($user->profile)->diary_password_hash;
-
-        if (!$hash || !Hash::check($request->diary_password, $hash)) {
-            return response()->json(['message' => 'Senha do diário inválida'], 403);
-        }
-
-        $entries = DiaryEntry::where('user_id', $user->id)
-            ->latest('created_at')
-            ->get(); // se quiser paginação: ->paginate(20);
+        $entries = $this->diaryService->index(
+            $request->user(),
+            $request->validated()['diary_password']
+        );
 
         return response()->json($entries);
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy(DiaryPasswordRequest $request, int $id): JsonResponse
     {
-        $request->validate([
-            'diary_password' => 'required|string',
+        $this->diaryService->destroy(
+            $request->user(),
+            $id,
+            $request->validated()['diary_password']
+        );
+
+        return response()->json([
+            'message' => 'Entrada deletada com sucesso!',
         ]);
-
-        $user = $request->user();
-        $hash = optional($user->profile)->diary_password_hash;
-
-        if (!$hash || !Hash::check($request->diary_password, $hash)) {
-            return response()->json(['message' => 'Senha do diário inválida'], 403);
-        }
-
-        $entry = DiaryEntry::where('user_id', $user->id)->findOrFail($id);
-        $entry->delete();
-
-        return response()->json(['message' => 'Entrada deletada com sucesso!']);
     }
 }

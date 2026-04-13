@@ -2,62 +2,43 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\User\UpdateUserRequest;
+use App\Services\UserService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private UserService $userService
+    ) {}
 
-    public function me(Request $request)
+    public function me(Request $request): JsonResponse
     {
-        $user = $request->user()->load(['profile']);
-        if ($user->profile) {
-            unset($user->profile->diary_password_hash);
-        }
+        $user = $this->userService->getProfile($request->user());
+
         return response()->json($user);
     }
 
-    public function update(Request $request)
+    public function update(UpdateUserRequest $request): JsonResponse
     {
-        $user = $request->user();
-
-        $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:users,email,' . $user->id,
-            'password' => 'sometimes|string|min:6',
-        ]);
-
-        if($request->has('name')){
-            $user->name = $request->name;
-        }
-
-        if($request->has('email')){
-            $user->email = $request->email;
-        }
-
-        if($request->has('password')){
-            $user->password = Hash::make($request->password);
-        }
-
-        $user->save();
+        $user = $this->userService->update(
+            $request->user(),
+            $request->validated()
+        );
 
         return response()->json([
             'message' => 'Usuário atualizado com sucesso!',
-            'user' => $user,
-        ], 200);
+            'user'    => $user,
+        ]);
     }
 
-    public function destroy(Request $request)
+    public function destroy(Request $request): JsonResponse
     {
-        $user = request()->user();
-        
-        $user->tokens()->delete();
-        $user->delete();
+        $this->userService->destroy($request->user());
 
         return response()->json([
             'message' => 'Usuário deletado com sucesso!',
-        ], 200);
+        ]);
     }
 }

@@ -1,73 +1,62 @@
 <?php
 
 namespace App\Http\Controllers;
+
+use App\Http\Requests\Link\SearchPatientRequest;
+use App\Http\Requests\Link\StoreLinkRequest;
+use App\Services\LinkService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\ProPatientLink;
-use App\Models\User;
 
 class LinkController extends Controller
 {
-  public function store(Request $request){
-    $this->authorizeRole($request->user(), 'pro');
+    public function __construct(
+        private LinkService $linkService
+    ) {}
 
-    $data = $request->validate(['patient_id'=>'required|exists:users,id']);
-    $patient = User::findOrFail($data['patient_id']);
-    if ($patient->role !== 'patient') return response()->json(['message'=>'Usuário não é paciente'], 422);
+    public function store(StoreLinkRequest $request): JsonResponse
+    {
+        $link = $this->linkService->store(
+            $request->user(),
+            $request->validated()['patient_id']
+        );
 
-    if (!optional($patient->profile)->consent_share_with_professional) {
-      return response()->json(['message'=>'Paciente sem consentimento'], 403);
+        return response()->json($link, 201);
     }
 
-    $link = ProPatientLink::updateOrCreate(
-      ['pro_id'=>$request->user()->id,'patient_id'=>$patient->id],
-      ['active'=>true]
-    );
-    return response()->json($link, 201);
-  }
+    public function indexPatients(Request $request): JsonResponse
+    {
+        $patients = $this->linkService->indexPatients($request->user());
 
-  public function indexPatients(Request $request){
-    $this->authorizeRole($request->user(), 'pro');
-    return response()->json($request->user()->patients()->paginate(30));
-  }
-
-  public function destroy(Request $request, $patientId){
-    $this->authorizeRole($request->user(), 'pro');
-    ProPatientLink::where('pro_id',$request->user()->id)->where('patient_id',$patientId)->update(['active'=>false]);
-    return response()->json(['message'=>'Vínculo removido']);
-  }
-
-  private function authorizeRole($user, $role){
-    if ($user->role !== $role) abort(403);
-  }
-
-  public function searchPatient(Request $request)
-{
-    $this->authorizeRole($request->user(), 'pro');
-
-    $request->validate(['email' => 'required|email']);
-
-    $patient = User::where('email', $request->email)
-                    ->where('role', 'patient')
-                    ->first();
-
-    if (!$patient) {
-        return response()->json(['message' => 'Paciente não encontrado.'], 404);
+        return response()->json($patients);
     }
 
-    return response()->json([
-        'id' => $patient->id,
-        'name' => $patient->name,
-        'email' => $patient->email,
-        'consent' => optional($patient->profile)->consent_share_with_professional ?? false,
-    ]);
-}
+    public function indexProfessionals(Request $request): JsonResponse
+    {
+        if ($request->user()->role !== 'patient') {
+            abort(403);
+        }
 
-public function indexProfessionals(Request $request)
-{
-    if ($request->user()->role !== 'patient') abort(403);
-    return response()->json(
-        $request->user()->professionals()->select('users.id', 'users.name', 'users.email')->paginate(30)
-    );
-}
-}
+        $professionals = $this->linkService->indexProfessionals($request->user());
 
+        return response()->json($professionals);
+    }
+
+    public function destroy(Request $request, int $patientId): JsonResponse
+    {
+        $this->linkService->destroy($request->user(), $patientId);
+
+        return response()->json([
+            'message' => 'Vínculo removido.',
+        ]);
+    }
+
+    public function searchPatient(SearchPatientRequest $request): JsonResponse
+    {
+        $result = $this->linkService->searchPatient(
+            $request->validated()['email']
+        );
+
+        return response()->json($result);
+    }
+}

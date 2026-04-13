@@ -2,78 +2,50 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Services\AuthService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    //POST
-    public function register(Request $request)
+    public function __construct(
+        private AuthService $authService
+    ) {}
+
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-            'role' => 'sometimes|string|in:patient,pro',
-        ]);
-    
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->input('role', 'patient'),
-        ]);
-    
-        $token = $user->createToken('auth_token')->plainTextToken;
-    
+        $result = $this->authService->register($request->validated());
+
         return response()->json([
             'message' => 'Usuário registrado com sucesso',
-            'user' => $user,
-            'token' => $token
+            'user'    => $result['user'],
+            'token'   => $result['token'],
         ], 201);
     }
 
-    //POST
-    public function login(Request $request)
+    public function login(LoginRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string'
-        ]);
-
-        $user = User::where('email', $request->email)->first();
-
-        if(!$user || !Hash::check($request->password, $user->password)){
-            throw ValidationException::withMessages([
-                'email' => ['Email e/ou Senha incorretos.']
-            ]);
-        }
-
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $result = $this->authService->login($request->validated());
 
         return response()->json([
             'message' => 'Login realizado com sucesso!',
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'role' => $user->role,
-            ],
-            'token' => $token,
-        ], 200);
+            'user'    => $result['user'],
+            'token'   => $result['token'],
+        ]);
     }
 
-    //POST
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logout realizado com sucesso!']);
+        $this->authService->logout($request->user());
+
+        return response()->json([
+            'message' => 'Logout realizado com sucesso!',
+        ]);
     }
 
-    //GET
-    public function userProfile(Request $request)
+    public function userProfile(Request $request): JsonResponse
     {
         return response()->json($request->user());
     }
