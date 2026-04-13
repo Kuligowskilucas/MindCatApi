@@ -2,21 +2,25 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     *
+     * Ordem importa! Cada seeder depende do anterior:
+     * Users → Profiles → Links → Moods, Diary, Tasks
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
-
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        $this->call([
+            UserSeeder::class,
+            ProfileSeeder::class,
+            LinkSeeder::class,
+            MoodSeeder::class,
+            DiarySeeder::class,
+            TaskSeeder::class,
+        ]);
     }
 }
