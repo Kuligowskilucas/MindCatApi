@@ -72,6 +72,22 @@ class PasswordResetController extends Controller
             return response()->json(['message' => 'Código expirado. Solicite um novo.'], 422);
         }
 
+        $attempts = DB::table('password_reset_codes')
+            ->where('email', $request->email)
+            ->value('attempts') ?? 0;
+
+        if ($attempts >= 5) {
+            DB::table('password_reset_codes')->where('email', $request->email)->delete();
+            return response()->json(['message' => 'Muitas tentativas. Solicite um novo código.'], 429);
+        }
+
+        if (!Hash::check($request->code, $record->code)) {
+            DB::table('password_reset_codes')
+                ->where('email', $request->email)
+                ->increment('attempts');
+            return response()->json(['message' => 'Código incorreto.'], 422);
+        }
+
         if (!Hash::check($request->code, $record->code)) {
             return response()->json(['message' => 'Código incorreto.'], 422);
         }
@@ -85,7 +101,6 @@ class PasswordResetController extends Controller
         $user->password = Hash::make($request->password);
         $user->save();
 
-        // Limpar código usado
         DB::table('password_reset_codes')->where('email', $request->email)->delete();
 
         return response()->json(['message' => 'Senha redefinida com sucesso!']);
