@@ -2,114 +2,145 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
 use App\Models\User;
-use Illuminate\Testing\Assert;
+use App\Models\UserProfile;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Hash;
+use Tests\TestCase;
 
-class UsersTest extends TestCase
+class UserTest extends TestCase
 {
     use RefreshDatabase;
 
-
-
-    //example
-    /** @test */
-    public function a_user_can_be_created()
-    {
-        //arrange
-        $userData = [
-            'name' => 'Test User',
-            'email' => 'testuser@example.com',
-        ];
-        
-        //act
-        $user = User::factory()->create($userData);
-
-        //assert
-        $this->assertDatabaseHas('users', [
-            'name' => 'Test User',
-            'email' => 'testuser@example.com',
-        ]);
-    }
-
+    // ─── ME ───
 
     /** @test */
-    public function user_can_register()
+    public function me_returns_user_with_profile(): void
     {
-        //arrange
-        $userData = [
-            'name' => 'Matheus Henrique de Oliveira',
-            'email' => 'matheushro.dev@gmail.com',
-            'password' => 'minha_senha_nova_cat_api_18937219832',
-        ];
-        
-        //act
-        $response = $this->postJson('/api/register', $userData);
+        $user = User::factory()->create();
+        UserProfile::factory()->create(['user_id' => $user->id]);
 
-        //assert
-        $this->assertDatabaseHas('users', [
-            'name' => 'Matheus Henrique de Oliveira',
-            'email' => 'matheushro.dev@gmail.com',
-        ]);
+        $response = $this->actingAs($user)->getJson('/api/me');
 
-        $response->assertStatus(201);
-        $response->assertJson([
-            'message' => 'Usuário registrado com sucesso',
-            'user' => [
-                'name' => 'Matheus Henrique de Oliveira',
-                'email' => 'matheushro.dev@gmail.com',
-            ],
-            'token' => $response->json('token'),
-        ]);
+        $response->assertStatus(200)
+            ->assertJsonStructure(['id', 'name', 'email', 'role', 'profile']);
     }
 
     /** @test */
-    public function user_cant_register_without_name()
+    public function me_hides_diary_password_hash(): void
     {
-        //arrange
-        $userData = [
-            'email' => 'matheushro.dev@gmail.com',
-            'password' => 'minha_senha_nova_cat_api_18937219832',
-        ];
-        
-        //act
-        $response = $this->postJson('/api/register', $userData);
+        $user = User::factory()->create();
+        UserProfile::create([
+            'user_id'             => $user->id,
+            'diary_password_hash' => Hash::make('segredo'),
+        ]);
 
-        //assert
-        $this->assertDatabaseMissing('users', [
-            'email' => 'matheushro.dev@gmail.com',
+        $response = $this->actingAs($user)->getJson('/api/me');
+
+        $response->assertStatus(200);
+        $this->assertArrayNotHasKey('diary_password_hash', $response->json('profile'));
+    }
+
+    /** @test */
+    public function me_requires_authentication(): void
+    {
+        $this->getJson('/api/me')->assertStatus(401);
+    }
+
+    // ─── UPDATE ───
+
+    /** @test */
+    public function user_can_update_name(): void
+    {
+        $user = User::factory()->create(['name' => 'Nome Antigo']);
+
+        $response = $this->actingAs($user)->putJson('/api/user/update', [
+            'name' => 'Nome Novo',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'name' => 'Nome Novo']);
+    }
+
+    /** @test */
+    public function user_can_update_email(): void
+    {
+        $user = User::factory()->create(['email' => 'antigo@teste.com']);
+
+        $response = $this->actingAs($user)->putJson('/api/user/update', [
+            'email' => 'novo@teste.com',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('users', ['id' => $user->id, 'email' => 'novo@teste.com']);
+    }
+
+    /** @test */
+    public function user_can_update_password(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->putJson('/api/user/update', [
+            'password' => 'novasenha123',
+        ]);
+
+        $response->assertStatus(200);
+
+        $user->refresh();
+        $this->assertTrue(Hash::check('novasenha123', $user->password));
+    }
+
+    /** @test */
+    public function update_rejects_duplicate_email(): void
+    {
+        $user1 = User::factory()->create(['email' => 'user1@teste.com']);
+        $user2 = User::factory()->create(['email' => 'user2@teste.com']);
+
+        $response = $this->actingAs($user1)->putJson('/api/user/update', [
+            'email' => 'user2@teste.com',
         ]);
 
         $response->assertStatus(422);
-        $response->assertJson([
-            'message' => 'The name field is required.',
-        ]);
     }
 
     /** @test */
-    public function user_cant_register_with_email_already_exists()
+    public function update_allows_keeping_same_email(): void
     {
-        //arrange
-        $userData = [
-            'name' => 'Matheus Henrique de Oliveira',
-            'email' => 'matheushro.dev@gmail.com',
-            'password' => 'minha_senha_nova_cat_api_18937219832',
-        ];
+        $user = User::factory()->create(['email' => 'mesmo@teste.com']);
 
-        $userRegistered = User::factory()->create([
-            'name' => 'Matheus Henrique de Oliveira 1',
-            'email' => 'matheushro.dev@gmail.com',
+        $response = $this->actingAs($user)->putJson('/api/user/update', [
+            'email' => 'mesmo@teste.com',
+            'name'  => 'Novo Nome',
         ]);
 
-        //act
-        $response = $this->postJson('/api/register', $userData);
-
-        //assert
-        $response->assertStatus(422);
-        $response->assertJson([
-            'message' => 'The email has already been taken.',
-        ]);
+        $response->assertStatus(200);
     }
 
+    // ─── DESTROY ───
+
+    /** @test */
+    public function user_can_delete_account(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->deleteJson('/api/user/delete');
+
+        $response->assertStatus(200)
+            ->assertJson(['message' => 'Usuário deletado com sucesso!']);
+
+        $this->assertSoftDeleted('users', ['id' => $user->id]);
+    }
+
+    /** @test */
+    public function delete_removes_tokens(): void
+    {
+        $user = User::factory()->create();
+        $user->createToken('test_token');
+
+        $this->assertDatabaseHas('personal_access_tokens', ['tokenable_id' => $user->id]);
+
+        $this->actingAs($user)->deleteJson('/api/user/delete');
+
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
+    }
 }
