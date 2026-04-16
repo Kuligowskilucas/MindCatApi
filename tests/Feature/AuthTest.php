@@ -19,7 +19,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/register', [
             'name'     => 'Novo Paciente',
             'email'    => 'paciente@teste.com',
-            'password' => 'senha123',
+            'password' => 'Senha123',
             'role'     => 'patient',
         ]);
 
@@ -39,7 +39,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/register', [
             'name'     => 'Dr. Teste',
             'email'    => 'pro@teste.com',
-            'password' => 'senha123',
+            'password' => 'Senha123',
             'role'     => 'pro',
         ]);
 
@@ -53,7 +53,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/register', [
             'name'     => 'Sem Role',
             'email'    => 'semrole@teste.com',
-            'password' => 'senha123',
+            'password' => 'Senha123',
         ]);
 
         $response->assertStatus(201)
@@ -66,7 +66,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/register', [
             'name'     => 'Hacker',
             'email'    => 'hack@teste.com',
-            'password' => 'senha123',
+            'password' => 'Senha123',
             'role'     => 'admin',
         ]);
 
@@ -89,7 +89,7 @@ class AuthTest extends TestCase
         $response = $this->postJson('/api/register', [
             'name'     => 'Outro',
             'email'    => 'usado@teste.com',
-            'password' => 'senha123',
+            'password' => 'Senha123',
         ]);
 
         $response->assertStatus(422);
@@ -112,11 +112,11 @@ class AuthTest extends TestCase
     /** @test */
     public function user_can_login_with_correct_credentials(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('senha123')]);
+        $user = User::factory()->create(['password' => bcrypt('Senha123')]);
 
         $response = $this->postJson('/api/login', [
             'email'    => $user->email,
-            'password' => 'senha123',
+            'password' => 'Senha123',
         ]);
 
         $response->assertStatus(200)
@@ -126,11 +126,11 @@ class AuthTest extends TestCase
     /** @test */
     public function login_fails_with_wrong_password(): void
     {
-        $user = User::factory()->create(['password' => bcrypt('senha123')]);
+        $user = User::factory()->create(['password' => bcrypt('Senha123')]);
 
         $response = $this->postJson('/api/login', [
             'email'    => $user->email,
-            'password' => 'senhaerrada',
+            'password' => 'SenhaErrada',
         ]);
 
         $response->assertStatus(422);
@@ -141,7 +141,7 @@ class AuthTest extends TestCase
     {
         $response = $this->postJson('/api/login', [
             'email'    => 'naoexiste@teste.com',
-            'password' => 'senha123',
+            'password' => 'Senha123',
         ]);
 
         $response->assertStatus(422);

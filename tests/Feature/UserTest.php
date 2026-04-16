@@ -81,13 +81,13 @@ class UserTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user)->putJson('/api/user/update', [
-            'password' => 'novasenha123',
+            'password' => 'NovaSenha123',
         ]);
 
         $response->assertStatus(200);
 
         $user->refresh();
-        $this->assertTrue(Hash::check('novasenha123', $user->password));
+        $this->assertTrue(Hash::check('NovaSenha123', $user->password));
     }
 
     /** @test */

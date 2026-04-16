@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\User;
 
+use App\Rules\StrongPassword;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateUserRequest extends FormRequest
@@ -18,7 +19,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name'     => 'sometimes|string|max:255',
             'email'    => "sometimes|string|email|max:255|unique:users,email,{$userId}",
-            'password' => 'sometimes|string|min:6',
+            'password' => ['sometimes', 'required', 'string', new StrongPassword],
         ];
     }
 
@@ -26,7 +27,6 @@ class UpdateUserRequest extends FormRequest
     {
         return [
             'email.unique' => 'Este email já está em uso.',
-            'password.min' => 'A senha deve ter pelo menos 6 caracteres.',
         ];
     }
 }

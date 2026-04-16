@@ -76,7 +76,7 @@ class PasswordResetTest extends TestCase
         $response = $this->postJson('/api/reset-password', [
             'email'    => 'teste@teste.com',
             'code'     => $code,
-            'password' => 'novasenha123',
+            'password' => 'NovaSenha123',
         ]);
 
         $response->assertStatus(200)
@@ -84,7 +84,7 @@ class PasswordResetTest extends TestCase
 
         // Verifica que a senha mudou
         $user->refresh();
-        $this->assertTrue(Hash::check('novasenha123', $user->password));
+        $this->assertTrue(Hash::check('NovaSenha123', $user->password));
 
         // Verifica que o código foi removido
         $this->assertDatabaseMissing('password_reset_codes', ['email' => 'teste@teste.com']);
@@ -105,7 +105,7 @@ class PasswordResetTest extends TestCase
         $response = $this->postJson('/api/reset-password', [
             'email'    => 'teste@teste.com',
             'code'     => '999999',
-            'password' => 'novasenha123',
+            'password' => 'NovaSenha123',
         ]);
 
         $response->assertStatus(422);
@@ -130,7 +130,7 @@ class PasswordResetTest extends TestCase
         $response = $this->postJson('/api/reset-password', [
             'email'    => 'teste@teste.com',
             'code'     => '123456',
-            'password' => 'novasenha123',
+            'password' => 'NovaSenha123',
         ]);
 
         $response->assertStatus(429);
@@ -152,7 +152,7 @@ class PasswordResetTest extends TestCase
         $response = $this->postJson('/api/reset-password', [
             'email'    => 'teste@teste.com',
             'code'     => '123456',
-            'password' => 'novasenha123',
+            'password' => 'NovaSenha123',
         ]);
 
         $response->assertStatus(422);
@@ -166,7 +166,7 @@ class PasswordResetTest extends TestCase
         $this->postJson('/api/reset-password', [
             'email'    => 'teste@teste.com',
             'code'     => '12',
-            'password' => 'nova',
+            'password' => 'NovaSenha123',
         ])->assertStatus(422);
     }
 }
