@@ -256,12 +256,13 @@ DELETE /api/tasks/{task}             Remover tarefa
 
 ## 📄 Licença
 
-Projeto pessoal de estudo e portfólio. Todos os direitos reservados.
+© 2026 MindCat. Todos os direitos reservados.
+Este software é proprietário. O código-fonte é disponibilizado publicamente para fins de transparência e documentação, mas não está licenciado para uso, modificação ou redistribuição sem autorização expressa dos autores.
 
 ---
 
 <div align="center">
 
-Feito com 🐱 por **[Lucas Gabriel Kuligowski](https://github.com/Kuligowskilucas)**
+MindCat • Feito com 🐱 por **[Lucas Gabriel Kuligowski](https://github.com/Kuligowskilucas)**
 
 </div>
