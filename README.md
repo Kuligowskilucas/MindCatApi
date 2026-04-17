@@ -1,66 +1,267 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# 🐱 MindCat API
 
-## About Laravel
+**API REST do MindCat — app de saúde mental que conecta pacientes e psicólogos**
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+[![Laravel](https://img.shields.io/badge/Laravel-10-FF2D20?logo=laravel&logoColor=white)](https://laravel.com/)
+[![PHP](https://img.shields.io/badge/PHP-8.1+-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![Sanctum](https://img.shields.io/badge/Auth-Sanctum-red)](https://laravel.com/docs/sanctum)
+[![Tests](https://img.shields.io/badge/tests-96_passing-success)]()
+[![Status](https://img.shields.io/badge/status-em_desenvolvimento-yellow)]()
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+</div>
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## 📖 Sobre
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+API REST construída em **Laravel 10** que alimenta o aplicativo [MindCat](https://github.com/Kuligowskilucas/mindcat). Responsável por autenticação, gestão de pacientes e profissionais, registro de humor, diário criptografado, tarefas clínicas e vínculos com consentimento.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## ✨ Funcionalidades
 
-## Laravel Sponsors
+### 🔐 Autenticação
+- Registro com role (`patient` ou `pro`)
+- Login com tokens via **Laravel Sanctum**
+- Logout invalidando token atual
+- Reset de senha via código de 6 dígitos enviado por email (com rate limiting e controle de tentativas)
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### 👤 Gestão de usuário
+- Perfil com preferências (push, IA, barra de progresso)
+- Atualização de dados pessoais
+- Exclusão de conta
+- Senha exclusiva para o diário
 
-### Premium Partners
+### 📊 Funcionalidades clínicas
+- **Humor**: registro diário, histórico filtrado por data
+- **Diário**: CRUD com senha própria e conteúdo criptografado no banco
+- **Tarefas**: profissional cria, paciente marca como concluída
+- **Vínculos**: profissional vincula paciente via email, sujeito a consentimento explícito
+- **Resumo clínico**: dados agregados do paciente para o profissional vinculado
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+### 🛡 Segurança
+- Senhas com requisitos fortes (mínimo 8, maiúscula, minúscula, número) via **custom rule**
+- Rate limiting em rotas sensíveis (login, forgot-password, reset-password)
+- Controle de role via middleware
+- Isolamento de dados: usuários só acessam próprios recursos
+- Conteúdo do diário criptografado no banco via `encrypted` cast
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 🛠 Stack técnica
 
-## Code of Conduct
+| Categoria | Tecnologia |
+|---|---|
+| Framework | Laravel 10 |
+| Linguagem | PHP 8.1+ |
+| Banco | MySQL (produção) / SQLite in-memory (testes) |
+| Auth | Laravel Sanctum 3.3 |
+| Email | SMTP (Mailtrap em dev, trocável em produção) |
+| Testes | PHPUnit 10 com RefreshDatabase |
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## 🏗 Decisões arquiteturais
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Algumas escolhas técnicas que valem destaque:
 
-## License
+- **Service layer separada de controllers** — controllers só orquestram requests/responses. Lógica de negócio fica em `app/Services/` (AuthService, PasswordResetService), facilitando teste e reuso.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+- **Form Requests centralizam validação** — cada endpoint tem seu próprio `FormRequest` em `app/Http/Requests/`. Nenhuma regra de validação espalhada por controllers.
+
+- **Custom Rule para senha forte** — `app/Rules/StrongPassword.php` implementa `ValidationRule` do Laravel 10 e é reutilizada em register, reset de senha e update de usuário. Uma única fonte de verdade para a política de senhas.
+
+- **Criptografia de conteúdo sensível** — entradas de diário são criptografadas via cast `encrypted` do Eloquent. Mesmo com acesso ao banco, não há conteúdo legível.
+
+- **Rate limiting granular** — `throttle:5,1` no login, `throttle:3,1` no forgot-password, reset-password também limitado. Evita brute force sem depender de CAPTCHA.
+
+- **Reset de senha com bcrypt hash** — o código de 6 dígitos é armazenado como bcrypt hash, não em texto puro. A coluna `code` foi migrada de VARCHAR(6) para VARCHAR(255) para acomodar o hash.
+
+- **Testes usam SQLite in-memory** — tests rodam em segundos. `phpunit.xml` configura `DB_CONNECTION=sqlite` e `DB_DATABASE=:memory:`. Mesma lógica, outra engine, velocidade altíssima.
+
+---
+
+## 🧪 Testes
+
+A suíte cobre 96 cenários nos fluxos críticos:
+
+```bash
+php artisan test
+```
+
+| Arquivo | Testes | Cobre |
+|---|---:|---|
+| `AuthTest` | 13 | Registro (roles, validação de senha forte, duplicado), login, logout |
+| `PasswordResetTest` | 8 | Envio de código, reset com código certo/errado, expirado, brute force |
+| `UserTest` | 8 | Me (com profile, sem hash), update, delete |
+| `ProfileTest` | 7 | Show, consent toggle, diary password |
+| `DiaryTest` | 8 | CRUD, senha correta/errada, isolamento entre users |
+| `MoodTest` | 9 | Store (com descrição, limites 1-5), index (filtro data), delete, isolamento |
+| `TaskTest` | 11 | Pro cria, paciente completa, permissões |
+| `LinkTest` | 11 | Vincular, consentimento, busca, desvincular |
+| `PatientTest` | 5 | Summary (com permissões e consentimento) |
+
+Cada teste valida cenário feliz, erros de validação, permissões negadas e isolamento entre usuários.
+
+---
+
+## 📁 Estrutura do projeto
+
+```
+MindCatApi/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/       # Controllers finos (só orquestram)
+│   │   ├── Requests/          # Form Requests para validação
+│   │   └── Middleware/        # RoleMiddleware, etc
+│   ├── Models/                # Eloquent models
+│   ├── Rules/                 # Custom validation rules (StrongPassword)
+│   └── Services/              # Regras de negócio
+├── database/
+│   ├── factories/             # Factories para testes e seeds
+│   ├── migrations/
+│   └── seeders/               # Dados realistas para dev
+├── routes/
+│   └── api.php                # Todas as rotas da API
+├── tests/
+│   └── Feature/               # 96 testes cobrindo a API
+└── config/
+```
+
+---
+
+## 🚀 Como rodar localmente
+
+### Pré-requisitos
+- PHP 8.1+
+- Composer
+- MySQL (ou PostgreSQL)
+- Conta no Mailtrap (para emails em dev)
+
+### Instalação
+
+```bash
+# Clonar e instalar dependências
+git clone https://github.com/Kuligowskilucas/MindCatApi.git
+cd MindCatApi
+composer install
+
+# Configurar ambiente
+cp .env.example .env
+php artisan key:generate
+
+# Ajustar .env com credenciais do banco e Mailtrap:
+# DB_DATABASE=mindcat
+# DB_USERNAME=root
+# DB_PASSWORD=
+# MAIL_USERNAME=seu_mailtrap_user
+# MAIL_PASSWORD=seu_mailtrap_pass
+
+# Rodar migrations e popular banco
+php artisan migrate:fresh --seed
+
+# Iniciar servidor
+php artisan serve
+```
+
+API disponível em `http://127.0.0.1:8000`.
+
+### Rodar testes
+
+```bash
+php artisan test
+```
+
+---
+
+## 🧪 Contas criadas pelo seeder
+
+| Tipo | Email | Senha |
+|---|---|---|
+| Profissional | `pro@mindcat.app` | `Pro12345` |
+| Profissional | `pro2@mindcat.app` | `Pro12345` |
+| Paciente | `paciente@mindcat.app` | `Paciente123` |
+| Paciente | `maria@mindcat.app` | `Paciente123` |
+| Paciente | `joao@mindcat.app` | `Paciente123` |
+
+Os 3 primeiros pacientes têm senha de diário `diario123`. Vínculos entre profissionais e pacientes já vêm populados.
+
+---
+
+## 📡 Endpoints principais
+
+### Públicos
+```
+POST   /api/register                 Criar conta (patient ou pro)
+POST   /api/login                    Login
+POST   /api/forgot-password          Solicitar código por email
+POST   /api/reset-password           Redefinir senha com código
+```
+
+### Autenticados (Bearer token)
+```
+POST   /api/logout                   Invalidar token atual
+GET    /api/me                       Usuário + perfil
+GET    /api/user                     Dados básicos do usuário
+PUT    /api/user/update              Atualizar usuário
+DELETE /api/user/delete              Excluir conta
+
+GET    /api/profile                  Perfil
+PUT    /api/profile                  Atualizar perfil
+PUT    /api/profile/diary-password   Definir senha do diário
+
+POST   /api/diary                    Criar entrada
+POST   /api/diary/list               Listar (exige senha)
+DELETE /api/diary/{id}               Remover
+
+POST   /api/moods                    Registrar humor
+GET    /api/moods                    Listar humor
+DELETE /api/moods/{id}               Remover
+
+GET    /api/tasks                    Listar tarefas
+PATCH  /api/tasks/{task}/done        Marcar como concluída
+
+GET    /api/my-professionals         Profissionais do paciente
+```
+
+### Exclusivas de profissionais
+```
+POST   /api/links                    Criar vínculo com paciente
+GET    /api/patients                 Listar pacientes vinculados
+DELETE /api/links/{patientId}        Desvincular
+GET    /api/patients/search          Buscar paciente por email
+POST   /api/tasks                    Criar tarefa para paciente
+GET    /api/patients/{id}/summary    Resumo clínico (exige consentimento)
+DELETE /api/tasks/{task}             Remover tarefa
+```
+
+---
+
+## 🗺 Roadmap
+
+- [x] CRUD completo de todas as entidades
+- [x] Autenticação Sanctum com roles
+- [x] Reset de senha via email com bcrypt hash
+- [x] 96 testes automatizados
+- [x] Senha forte via custom rule
+- [x] Seeders com dados realistas
+- [ ] Validação de CRP para profissionais
+- [ ] Rate limiting mais granular (endpoints sensíveis)
+- [ ] Crash reporting (Sentry ou similar)
+- [ ] Deploy em produção
+
+---
+
+## 📄 Licença
+
+Projeto pessoal de estudo e portfólio. Todos os direitos reservados.
+
+---
+
+<div align="center">
+
+Feito com 🐱 por **[Lucas Gabriel Kuligowski](https://github.com/Kuligowskilucas)**
+
+</div>
