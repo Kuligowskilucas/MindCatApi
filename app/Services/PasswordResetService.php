@@ -68,6 +68,10 @@ class PasswordResetService
         $user->password = Hash::make($newPassword);
         $user->save();
 
+        // Quem resetou a senha provavelmente foi comprometido.
+        // Derruba TODOS os tokens existentes — inclusive os do atacante.
+        $user->tokens()->delete();
+
         DB::table(self::TABLE)->where('email', $email)->delete();
     }
 }

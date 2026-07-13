@@ -169,4 +169,26 @@ class PasswordResetTest extends TestCase
             'password' => 'NovaSenha123',
         ])->assertStatus(422);
     }
+
+    /** @test */
+    public function reset_password_revokes_existing_tokens(): void
+    {
+        $user = User::factory()->create(['email' => 'teste@teste.com']);
+        $user->createToken('token_do_atacante');
+    
+        DB::table('password_reset_codes')->insert([
+            'email'      => 'teste@teste.com',
+            'code'       => Hash::make('123456'),
+            'attempts'   => 0,
+            'expires_at' => now()->addMinutes(15),
+        ]);
+    
+        $this->postJson('/api/reset-password', [
+            'email'    => 'teste@teste.com',
+            'code'     => '123456',
+            'password' => 'NovaSenha123',
+        ])->assertStatus(200);
+    
+        $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
+    }
 }

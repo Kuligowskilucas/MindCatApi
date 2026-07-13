@@ -229,4 +229,23 @@ class LinkTest extends TestCase
         $this->getJson('/api/patients')->assertStatus(401);
         $this->getJson('/api/my-professionals')->assertStatus(401);
     }
+
+    /** @test */
+    public function pro_stops_seeing_patient_who_revokes_consent(): void
+    {
+        [$pro, $patient] = $this->createProAndConsentedPatient();
+    
+        ProPatientLink::create([
+            'pro_id'     => $pro->id,
+            'patient_id' => $patient->id,
+            'active'     => true,
+        ]);
+    
+        $this->assertCount(1, $this->actingAs($pro)->getJson('/api/patients')->json('data'));
+    
+        // Paciente revoga o consentimento.
+        $patient->profile->update(['consent_share_with_professional' => false]);
+    
+        $this->assertCount(0, $this->actingAs($pro)->getJson('/api/patients')->json('data'));
+    }
 }

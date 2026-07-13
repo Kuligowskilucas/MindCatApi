@@ -140,7 +140,7 @@ class DiaryTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        $this->assertSoftDeleted('diary_entries', ['id' => $entry->id]);
+        $this->assertDatabaseMissing('diary_entries', ['id' => $entry->id]);
     }
 
     /** @test */

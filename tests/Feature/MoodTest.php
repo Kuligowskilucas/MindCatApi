@@ -150,7 +150,7 @@ class MoodTest extends TestCase
         $response = $this->actingAs($user)->deleteJson("/api/moods/{$mood->id}");
 
         $response->assertStatus(200);
-        $this->assertSoftDeleted('user_mood_tracking', ['id' => $mood->id]);
+        $this->assertDatabaseMissing('user_mood_tracking', ['id' => $mood->id]);
     }
 
     /** @test */

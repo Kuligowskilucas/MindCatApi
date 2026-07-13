@@ -7,6 +7,10 @@ use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
+use App\Models\DiaryEntry;
+use App\Models\UserMoodTracking;
+use App\Models\Task;
+use Illuminate\Support\Facades\DB;
 
 class UserTest extends TestCase
 {
@@ -78,10 +82,11 @@ class UserTest extends TestCase
     /** @test */
     public function user_can_update_password(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['password' => bcrypt('SenhaAtual123')]);
 
         $response = $this->actingAs($user)->putJson('/api/user/update', [
-            'password' => 'NovaSenha123',
+            'current_password' => 'SenhaAtual123',
+            'password'         => 'NovaSenha123',
         ]);
 
         $response->assertStatus(200);
@@ -142,5 +147,98 @@ class UserTest extends TestCase
         $this->actingAs($user)->deleteJson('/api/user/delete');
 
         $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
+    }
+
+    /** @test */
+    public function update_password_requires_current_password(): void
+    {
+        $user = User::factory()->create(['password' => bcrypt('SenhaAtual123')]);
+
+        $this->actingAs($user)->putJson('/api/user/update', [
+            'password' => 'NovaSenha123',
+        ])->assertStatus(422);
+    }
+
+    /** @test */
+    public function update_password_rejects_wrong_current_password(): void
+    {
+        $user = User::factory()->create(['password' => bcrypt('SenhaAtual123')]);
+
+        $this->actingAs($user)->putJson('/api/user/update', [
+            'current_password' => 'SenhaErrada123',
+            'password'         => 'NovaSenha123',
+        ])->assertStatus(422);
+
+        $user->refresh();
+        $this->assertTrue(Hash::check('SenhaAtual123', $user->password));
+    }
+
+    /** @test */
+    public function delete_account_erases_diary_and_moods(): void
+    {
+        $user = User::factory()->create();
+
+        $entry = DiaryEntry::create(['user_id' => $user->id, 'content' => 'Íntimo']);
+        $mood  = UserMoodTracking::create([
+            'user_id'     => $user->id,
+            'mood_level'  => 3,
+            'recorded_at' => now(),
+        ]);
+
+        $this->actingAs($user)->deleteJson('/api/user/delete')->assertStatus(200);
+
+        // Não basta soft delete: conteúdo íntimo tem que sumir do banco.
+        $this->assertDatabaseMissing('diary_entries', ['id' => $entry->id]);
+        $this->assertDatabaseMissing('user_mood_tracking', ['id' => $mood->id]);
+    }
+
+    /** @test */
+    public function delete_account_anonymizes_user(): void
+    {
+        $user = User::factory()->create([
+            'name'  => 'Lucas',
+            'email' => 'lucas@teste.com',
+        ]);
+
+        $this->actingAs($user)->deleteJson('/api/user/delete')->assertStatus(200);
+
+        $row = DB::table('users')->where('id', $user->id)->first();
+
+        $this->assertSame('Usuário removido', $row->name);
+        $this->assertNotSame('lucas@teste.com', $row->email);
+        $this->assertNotNull($row->deleted_at);
+    }
+
+    /** @test */
+    public function deleted_email_can_be_reused(): void
+    {
+        $user = User::factory()->create(['email' => 'lucas@teste.com']);
+
+        $this->actingAs($user)->deleteJson('/api/user/delete')->assertStatus(200);
+
+        $this->postJson('/api/register', [
+            'name'     => 'Lucas de novo',
+            'email'    => 'lucas@teste.com',
+            'password' => 'Senha123',
+        ])->assertStatus(201);
+    }
+
+    /** @test */
+    public function delete_account_keeps_pro_tasks(): void
+    {
+        $pro     = User::factory()->pro()->create();
+        $patient = User::factory()->patient()->create();
+
+        $task = Task::create([
+            'pro_id'     => $pro->id,
+            'patient_id' => $patient->id,
+            'title'      => 'Registro clínico',
+            'status'     => 'active',
+        ]);
+
+        $this->actingAs($patient)->deleteJson('/api/user/delete')->assertStatus(200);
+
+        // Registro clínico do profissional sobrevive, sem dado pessoal do paciente.
+        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'deleted_at' => null]);
     }
 }

@@ -26,9 +26,15 @@ class LinkService
         );
     }
 
+    /**
+     * Consentimento é verificado na LEITURA, não só no vínculo.
+     * Se o paciente revoga, ele some da lista imediatamente.
+     */
     public function indexPatients(User $pro)
     {
-        return $pro->patients()->paginate(30);
+        return $pro->patients()
+            ->whereHas('profile', fn ($q) => $q->where('consent_share_with_professional', true))
+            ->paginate(30);
     }
 
     public function indexProfessionals(User $patient)

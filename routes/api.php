@@ -6,24 +6,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\MoodController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\LinkController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\PasswordResetController;
 
-/*
-|--------------------------------------------------------------------------
-| API Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register API routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "api" middleware group. Make something great!
-|
-*/
-
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/forgot-password', [PasswordResetController::class, 'sendCode'])->middleware('throttle:3,1');
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:5,1');
@@ -33,7 +21,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
-    Route::put('/profile/diary-password', [ProfileController::class, 'setDiaryPassword']);
+    Route::put('/profile/diary-password', [ProfileController::class, 'setDiaryPassword'])
+        ->middleware('throttle:5,1');
 
     Route::get('/user', [AuthController::class, 'userProfile']);
     Route::put('/user/update', [UserController::class, 'update']);
@@ -42,28 +31,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', [UserController::class, 'me']);
 
     Route::post('/diary', [DiaryController::class, 'store']);
-    Route::post('/diary/list', [DiaryController::class, 'index']);
-    Route::delete('/diary/{id}', [DiaryController::class, 'destroy']);
+    Route::post('/diary/list', [DiaryController::class, 'index'])->middleware('throttle:5,1');
+    Route::delete('/diary/{id}', [DiaryController::class, 'destroy'])->middleware('throttle:5,1');
 
     Route::post('/moods', [MoodController::class, 'store']);
     Route::get('/moods',  [MoodController::class, 'index']);
     Route::delete('/moods/{id}', [MoodController::class, 'destroy']);
 
-    // Route::post('/exercises/complete', [ExerciseController::class,'complete']);
-    // Route::get('/exercises/history', [ExerciseController::class,'history']);
-
-    Route::get('/tasks', [TaskController::class,'index']);
-    Route::patch('/tasks/{task}/done', [TaskController::class,'markDone']);
+    Route::get('/tasks', [TaskController::class, 'index']);
+    Route::patch('/tasks/{task}/done', [TaskController::class, 'markDone']);
 
     Route::get('/my-professionals', [LinkController::class, 'indexProfessionals']);
 
     Route::middleware('role:pro')->group(function () {
-        Route::post('/links', [LinkController::class,'store']);
-        Route::get('/patients', [LinkController::class,'indexPatients']);
-        Route::delete('/links/{patientId}', [LinkController::class,'destroy']);
-        Route::get('/patients/search', [LinkController::class, 'searchPatient']);
-        Route::post('/tasks', [TaskController::class,'store']);
-        Route::get('/patients/{id}/summary', [PatientController::class,'summary']);
-        Route::delete('/tasks/{task}', [TaskController::class,'destroy']);
+        Route::post('/links', [LinkController::class, 'store']);
+        Route::get('/patients', [LinkController::class, 'indexPatients']);
+        Route::delete('/links/{patientId}', [LinkController::class, 'destroy']);
+        Route::get('/patients/search', [LinkController::class, 'searchPatient'])
+            ->middleware('throttle:10,1');
+        Route::post('/tasks', [TaskController::class, 'store']);
+        Route::get('/patients/{id}/summary', [PatientController::class, 'summary']);
+        Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
     });
 });

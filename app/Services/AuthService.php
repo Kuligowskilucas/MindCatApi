@@ -20,6 +20,7 @@ class AuthService
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
+            'model' => $user,
             'user'  => $this->formatUser($user),
             'token' => $token,
         ];
@@ -38,6 +39,7 @@ class AuthService
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return [
+            'model' => $user,
             'user'  => $this->formatUser($user),
             'token' => $token,
         ];
@@ -45,7 +47,11 @@ class AuthService
 
     public function logout(User $user): void
     {
-        $user->currentAccessToken()->delete();
+        $token = $user->currentAccessToken();
+
+        if ($token && method_exists($token, 'delete')) {
+            $token->delete();
+        }
     }
 
     private function formatUser(User $user): array

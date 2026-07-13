@@ -31,7 +31,9 @@ class DiaryService
         $this->verifyDiaryPassword($user, $diaryPassword);
 
         $entry = DiaryEntry::where('user_id', $user->id)->findOrFail($entryId);
-        $entry->delete();
+
+        // Conteúdo íntimo: exclusão é definitiva, não soft delete.
+        $entry->forceDelete();
     }
 
     private function verifyDiaryPassword(User $user, string $password): void
