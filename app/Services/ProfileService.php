@@ -32,8 +32,7 @@ class ProfileService
             }
         }
 
-        $profile = UserProfile::create(['user_id' => $user->id]);
-        $profile->diary_password_hash = Hash::make('Diario123');
+        $profile->diary_password_hash = Hash::make($newPassword);
         $profile->save();
     }
 }

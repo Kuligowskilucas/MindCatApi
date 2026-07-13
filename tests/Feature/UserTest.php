@@ -34,10 +34,7 @@ class UserTest extends TestCase
     public function me_hides_diary_password_hash(): void
     {
         $user = User::factory()->create();
-        UserProfile::create([
-            'user_id'             => $user->id,
-            $this->giveDiaryPassword($user, 'Segredo123'),
-        ]);
+        $this->giveDiaryPassword($user, 'Segredo123');
 
         $response = $this->actingAs($user)->getJson('/api/me');
 

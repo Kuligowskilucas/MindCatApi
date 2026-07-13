@@ -20,7 +20,6 @@ class UserProfileFactory extends Factory
             'push_notifications'               => 1,
             'progress_bar'                     => 0,
             'consent_share_with_professional'  => false,
-            'diary_password_hash'              => null,
         ];
     }
 

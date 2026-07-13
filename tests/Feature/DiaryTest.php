@@ -16,10 +16,7 @@ class DiaryTest extends TestCase
     private function createPatientWithDiaryPassword(): User
     {
         $user = User::factory()->patient()->create();
-
-        $profile = UserProfile::create(['user_id' => $user->id]);
-        $profile->diary_password_hash = Hash::make('senhaantiga');
-        $profile->save();
+        $this->giveDiaryPassword($user);
 
         return $user;
     }
@@ -30,20 +27,17 @@ class DiaryTest extends TestCase
     public function user_can_create_diary_entry(): void
     {
         $user = User::factory()->create();
-
-        $user->profile()->create([
-            'diary_password_hash' => bcrypt('Diario123'),
-        ]);
-
+        $this->giveDiaryPassword($user);   // Diario123
+    
         $response = $this->actingAs($user)->postJson('/api/diary', [
             'content'        => 'Hoje foi um bom dia.',
             'diary_password' => 'Diario123',
         ]);
-
+    
         $response->assertStatus(201)
             ->assertJsonStructure(['message', 'entry']);
     
-        $entry = \App\Models\DiaryEntry::where('user_id', $user->id)->first();
+        $entry = DiaryEntry::where('user_id', $user->id)->first();
         $this->assertNotNull($entry);
         $this->assertEquals('Hoje foi um bom dia.', $entry->content);
     }
