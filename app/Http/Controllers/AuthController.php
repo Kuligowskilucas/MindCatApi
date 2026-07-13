@@ -19,6 +19,18 @@ class AuthController extends Controller
     {
         $result = $this->authService->register($request->validated());
 
+        // SPA em domínio stateful: já deixa a sessão autenticada.
+        if ($request->hasSession()) {
+            Auth::guard('web')->login($result['model']);
+            $request->session()->regenerate();
+
+            return response()->json([
+                'message' => 'Usuário registrado com sucesso',
+                'user'    => $result['user'],
+            ], 201);
+        }
+
+        // Cliente mobile: token Bearer.
         return response()->json([
             'message' => 'Usuário registrado com sucesso',
             'user'    => $result['user'],
@@ -30,7 +42,6 @@ class AuthController extends Controller
     {
         $result = $this->authService->login($request->validated());
 
-        // Requisição de SPA em domínio stateful: autentica por sessão/cookie.
         if ($request->hasSession()) {
             Auth::guard('web')->login($result['model']);
             $request->session()->regenerate();
@@ -41,7 +52,6 @@ class AuthController extends Controller
             ]);
         }
 
-        // Requisição de cliente mobile: autentica por token Bearer.
         return response()->json([
             'message' => 'Login realizado com sucesso!',
             'user'    => $result['user'],
