@@ -20,6 +20,16 @@ class UserProfile extends Model
         'consent_share_with_professional',
     ];
 
+    protected $casts = [
+        'use_ai'                          => 'boolean',
+        'tdah_reminder'                   => 'boolean',
+        'push_notifications'              => 'boolean',
+        'progress_bar'                    => 'boolean',
+        'consent_share_with_professional' => 'boolean',
+    ];
+
+    protected $hidden = ['diary_password_hash'];
+
     public function user()
     {
         return $this->belongsTo(User::class);
