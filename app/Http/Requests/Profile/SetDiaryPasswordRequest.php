@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Profile;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Rules\StrongPassword;
 
 class SetDiaryPasswordRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class SetDiaryPasswordRequest extends FormRequest
     {
         return [
             'current_password' => 'sometimes|string',
-            'new_password'     => 'required|string|min:8',
+            'new_password'     => ['required', 'string', new StrongPassword],
         ];
     }
 
@@ -23,7 +24,6 @@ class SetDiaryPasswordRequest extends FormRequest
     {
         return [
             'new_password.required' => 'A nova senha é obrigatória.',
-            'new_password.min'      => 'A senha deve ter pelo menos 8 caracteres.',
         ];
     }
 }

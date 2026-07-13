@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -30,9 +29,9 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
         UserProfile::create([
-            'user_id'                          => $user->id,
-            'consent_share_with_professional'  => true,
-            'push_notifications'               => 1,
+            'user_id'                         => $user->id,
+            'consent_share_with_professional' => true,
+            'push_notifications'              => 1,
         ]);
 
         $response = $this->actingAs($user)->getJson('/api/profile');
@@ -62,8 +61,8 @@ class ProfileTest extends TestCase
     {
         $user = User::factory()->create();
         UserProfile::create([
-            'user_id'                          => $user->id,
-            'consent_share_with_professional'  => true,
+            'user_id'                         => $user->id,
+            'consent_share_with_professional' => true,
         ]);
 
         $response = $this->actingAs($user)->putJson('/api/profile', [
@@ -79,11 +78,10 @@ class ProfileTest extends TestCase
     /** @test */
     public function user_can_set_diary_password_first_time(): void
     {
-        $user = User::factory()->create();
-        UserProfile::create(['user_id' => $user->id]);
+        $user = User::factory()->create();   // sem perfil
 
         $response = $this->actingAs($user)->putJson('/api/profile/diary-password', [
-            'new_password' => 'diario123',
+            'new_password' => 'Diario123',
         ]);
 
         $response->assertStatus(200)
@@ -94,14 +92,11 @@ class ProfileTest extends TestCase
     public function user_can_change_diary_password_with_current(): void
     {
         $user = User::factory()->create();
-        UserProfile::create([
-            'user_id'             => $user->id,
-            'diary_password_hash' => Hash::make('senhaantiga'),
-        ]);
+        $this->giveDiaryPassword($user, 'SenhaAntiga1');
 
         $response = $this->actingAs($user)->putJson('/api/profile/diary-password', [
-            'current_password' => 'senhaantiga',
-            'new_password'     => 'senhanova1',
+            'current_password' => 'SenhaAntiga1',
+            'new_password'     => 'SenhaNova1',
         ]);
 
         $response->assertStatus(200);
@@ -111,21 +106,18 @@ class ProfileTest extends TestCase
     public function change_diary_password_fails_with_wrong_current(): void
     {
         $user = User::factory()->create();
-        UserProfile::create([
-            'user_id'             => $user->id,
-            'diary_password_hash' => Hash::make('senhaantiga'),
-        ]);
+        $this->giveDiaryPassword($user, 'SenhaAntiga1');
 
         $response = $this->actingAs($user)->putJson('/api/profile/diary-password', [
-            'current_password' => 'errada',
-            'new_password'     => 'senhanova1',
+            'current_password' => 'ErradaTotal1',
+            'new_password'     => 'SenhaNova1',
         ]);
 
         $response->assertStatus(403);
     }
 
     /** @test */
-    public function diary_password_requires_min_8_chars(): void
+    public function diary_password_must_be_strong(): void
     {
         $user = User::factory()->create();
         UserProfile::create(['user_id' => $user->id]);

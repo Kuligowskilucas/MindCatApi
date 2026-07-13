@@ -36,7 +36,7 @@ class UserTest extends TestCase
         $user = User::factory()->create();
         UserProfile::create([
             'user_id'             => $user->id,
-            'diary_password_hash' => Hash::make('segredo'),
+            $this->giveDiaryPassword($user, 'Segredo123'),
         ]);
 
         $response = $this->actingAs($user)->getJson('/api/me');

@@ -186,7 +186,7 @@ php artisan test
 | Paciente | `maria@mindcat.app` | `Paciente123` |
 | Paciente | `joao@mindcat.app` | `Paciente123` |
 
-Os 3 primeiros pacientes têm senha de diário `diario123`. Vínculos entre profissionais e pacientes já vêm populados.
+Os 3 primeiros pacientes têm senha de diário `Diario123`. Vínculos entre profissionais e pacientes já vêm populados.
 
 ---
 

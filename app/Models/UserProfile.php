@@ -18,7 +18,6 @@ class UserProfile extends Model
         'push_notifications',
         'progress_bar',
         'consent_share_with_professional',
-        'diary_password_hash'
     ];
 
     public function user()

@@ -13,13 +13,14 @@ class DiaryTest extends TestCase
 {
     use RefreshDatabase;
 
-    private function createPatientWithDiaryPassword(string $password = 'diario123'): User
+    private function createPatientWithDiaryPassword(): User
     {
         $user = User::factory()->patient()->create();
-        UserProfile::create([
-            'user_id'             => $user->id,
-            'diary_password_hash' => Hash::make($password),
-        ]);
+
+        $profile = UserProfile::create(['user_id' => $user->id]);
+        $profile->diary_password_hash = Hash::make('senhaantiga');
+        $profile->save();
+
         return $user;
     }
 
@@ -31,12 +32,12 @@ class DiaryTest extends TestCase
         $user = User::factory()->create();
 
         $user->profile()->create([
-            'diary_password_hash' => bcrypt('diario123'),
+            'diary_password_hash' => bcrypt('Diario123'),
         ]);
 
         $response = $this->actingAs($user)->postJson('/api/diary', [
             'content'        => 'Hoje foi um bom dia.',
-            'diary_password' => 'diario123',
+            'diary_password' => 'Diario123',
         ]);
 
         $response->assertStatus(201)
@@ -82,7 +83,7 @@ class DiaryTest extends TestCase
         DiaryEntry::create(['user_id' => $user->id, 'content' => 'Entrada 2']);
 
         $response = $this->actingAs($user)->postJson('/api/diary/list', [
-            'diary_password' => 'diario123',
+            'diary_password' => 'Diario123',
         ]);
 
         $response->assertStatus(200);
@@ -120,7 +121,7 @@ class DiaryTest extends TestCase
         DiaryEntry::create(['user_id' => $user2->id, 'content' => 'Entrada do outro']);
 
         $response = $this->actingAs($user1)->postJson('/api/diary/list', [
-            'diary_password' => 'diario123',
+            'diary_password' => 'Diario123',
         ]);
 
         $response->assertStatus(200);
@@ -136,7 +137,7 @@ class DiaryTest extends TestCase
         $entry = DiaryEntry::create(['user_id' => $user->id, 'content' => 'Deletar']);
 
         $response = $this->actingAs($user)->deleteJson("/api/diary/{$entry->id}", [
-            'diary_password' => 'diario123',
+            'diary_password' => 'Diario123',
         ]);
 
         $response->assertStatus(200);
@@ -164,7 +165,7 @@ class DiaryTest extends TestCase
         $entry = DiaryEntry::create(['user_id' => $user2->id, 'content' => 'Do outro']);
 
         $response = $this->actingAs($user1)->deleteJson("/api/diary/{$entry->id}", [
-            'diary_password' => 'diario123',
+            'diary_password' => 'Diario123',
         ]);
 
         $response->assertStatus(404);
