@@ -30,6 +30,19 @@ class UserProfile extends Model
 
     protected $hidden = ['diary_password_hash'];
 
+    protected $appends = ['has_diary_password'];
+
+    /**
+     * Indica se o paciente já definiu senha do diário, sem vazar o hash.
+     * Lê direto de $this->attributes (e não de $this->diary_password_hash)
+     * porque o valor está em $hidden — o acesso ao array bruto continua válido,
+     * e empty() sobre índice inexistente não emite warning.
+     */
+    public function getHasDiaryPasswordAttribute(): bool
+    {
+        return !empty($this->attributes['diary_password_hash']);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
