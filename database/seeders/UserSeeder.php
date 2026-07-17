@@ -10,6 +10,14 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // ── Admin (papel fora do registro público; criado só por seeder/artisan) ──
+        User::factory()->create([
+            'name'     => 'Admin MindCat',
+            'email'    => 'admin@mindcat.app',
+            'password' => Hash::make('Admin12345'),
+            'role'     => 'admin',
+        ]);
+        
         // ── Profissionais com credenciais fixas (pra login de teste) ──
         User::factory()->pro()->create([
             'name'     => 'Dra. Luciana Silva',

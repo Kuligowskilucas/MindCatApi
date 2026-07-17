@@ -9,6 +9,8 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\LinkController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\PatientController;
+use App\Http\Controllers\CredentialController;
+use App\Http\Controllers\AdminCredentialController;
 use App\Http\Controllers\PasswordResetController;
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
@@ -43,7 +45,26 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/my-professionals', [LinkController::class, 'indexProfessionals']);
 
+    // Credencial do profissional (self). Só role:pro — o pro ainda NÃO
+    // aprovado precisa acessar para submeter e acompanhar o status.
     Route::middleware('role:pro')->group(function () {
+        Route::get('/credentials/me', [CredentialController::class, 'me']);
+        Route::post('/credentials', [CredentialController::class, 'store'])
+            ->middleware('throttle:10,1');
+        Route::put('/credentials', [CredentialController::class, 'resubmit'])
+            ->middleware('throttle:10,1');
+    });
+
+    // Admin: validação de credenciais (Fase 5c).
+    Route::middleware('role:admin')->prefix('admin')->group(function () {
+        Route::get('/credentials', [AdminCredentialController::class, 'index']);
+        Route::get('/credentials/{credential}', [AdminCredentialController::class, 'show']);
+        Route::post('/credentials/{credential}/approve', [AdminCredentialController::class, 'approve']);
+        Route::post('/credentials/{credential}/reject', [AdminCredentialController::class, 'reject']);
+    });
+
+    // Rotas clínicas: exigem role:pro E credencial aprovada (pro.verified).
+    Route::middleware(['role:pro', 'pro.verified'])->group(function () {
         Route::post('/links', [LinkController::class, 'store']);
         Route::get('/patients', [LinkController::class, 'indexPatients']);
         Route::delete('/links/{patientId}', [LinkController::class, 'destroy']);
@@ -54,3 +75,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
     });
 });
+
+
+Route::get('/admin/credential-documents/{document}', [AdminCredentialController::class, 'document'])
+    ->middleware('signed')
+    ->name('admin.credential-document');

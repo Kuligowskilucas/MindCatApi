@@ -64,4 +64,14 @@ class User extends Authenticatable
                     ->wherePivot('active', true)
                     ->withTimestamps();
     }
+
+    public function credential()
+    {
+        return $this->hasOne(ProfessionalCredential::class);
+    }
+
+    public function patientInvites()
+    {
+        return $this->hasMany(PatientInvite::class, 'patient_id');
+    }
 }
