@@ -6,6 +6,8 @@ use App\Models\DiaryEntry;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Support\Facades\Log;
 
 class DiaryService
 {
@@ -23,7 +25,14 @@ class DiaryService
 
         return DiaryEntry::where('user_id', $user->id)
             ->latest('created_at')
-            ->get();
+            ->get()
+            ->map(fn (DiaryEntry $entry) => [
+                'id'         => $entry->id,
+                'user_id'    => $entry->user_id,
+                'content'    => $this->safeContent($entry),
+                'created_at' => $entry->created_at,
+                'updated_at' => $entry->updated_at,
+            ]);
     }
 
     public function destroy(User $user, int $entryId, string $diaryPassword): void
@@ -32,7 +41,6 @@ class DiaryService
 
         $entry = DiaryEntry::where('user_id', $user->id)->findOrFail($entryId);
 
-        // Conteúdo íntimo: exclusão é definitiva, não soft delete.
         $entry->forceDelete();
     }
 
@@ -42,6 +50,17 @@ class DiaryService
 
         if (!$hash || !Hash::check($password, $hash)) {
             throw new HttpException(403, 'Senha do diário inválida.');
+        }
+    }
+
+    private function safeContent(DiaryEntry $entry): ?string
+    {
+        try {
+            return $entry->content;
+        } catch (DecryptException $e) {
+            Log::warning('Entrada de diário indecifrável', ['id' => $entry->id]);
+
+            return null;
         }
     }
 }
