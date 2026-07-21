@@ -24,8 +24,7 @@ class LinkTest extends TestCase
     }
 
     // ─── STORE (LINK) ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_can_link_consented_patient(): void
     {
         [$pro, $patient] = $this->createProAndConsentedPatient();
@@ -42,7 +41,7 @@ class LinkTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_cannot_link_patient_without_consent(): void
     {
         $pro = User::factory()->pro()->create();
@@ -59,7 +58,7 @@ class LinkTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_cannot_link_another_pro(): void
     {
         $pro1 = User::factory()->pro()->create();
@@ -72,7 +71,7 @@ class LinkTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_cannot_create_link(): void
     {
         $patient = User::factory()->patient()->create();
@@ -85,8 +84,7 @@ class LinkTest extends TestCase
     }
 
     // ─── SEARCH PATIENT ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_can_search_patient_by_email(): void
     {
         $pro = User::factory()->pro()->create();
@@ -105,7 +103,7 @@ class LinkTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function search_returns_404_for_nonexistent_patient(): void
     {
         $pro = User::factory()->pro()->create();
@@ -115,7 +113,7 @@ class LinkTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function search_does_not_find_pros(): void
     {
         $pro1 = User::factory()->pro()->create();
@@ -126,7 +124,7 @@ class LinkTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_cannot_search(): void
     {
         $patient = User::factory()->patient()->create();
@@ -137,8 +135,7 @@ class LinkTest extends TestCase
     }
 
     // ─── INDEX PATIENTS ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_can_list_linked_patients(): void
     {
         [$pro, $patient] = $this->createProAndConsentedPatient();
@@ -155,7 +152,7 @@ class LinkTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_doesnt_see_inactive_links(): void
     {
         [$pro, $patient] = $this->createProAndConsentedPatient();
@@ -171,8 +168,7 @@ class LinkTest extends TestCase
     }
 
     // ─── DESTROY (UNLINK) ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_can_unlink_patient(): void
     {
         [$pro, $patient] = $this->createProAndConsentedPatient();
@@ -194,8 +190,7 @@ class LinkTest extends TestCase
     }
 
     // ─── INDEX PROFESSIONALS (PATIENT) ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_can_list_linked_professionals(): void
     {
         [$pro, $patient] = $this->createProAndConsentedPatient();
@@ -212,7 +207,7 @@ class LinkTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_cannot_access_my_professionals(): void
     {
         $pro = User::factory()->pro()->create();
@@ -222,7 +217,7 @@ class LinkTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function links_require_authentication(): void
     {
         $this->postJson('/api/links', [])->assertStatus(401);
@@ -230,7 +225,7 @@ class LinkTest extends TestCase
         $this->getJson('/api/my-professionals')->assertStatus(401);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_stops_seeing_patient_who_revokes_consent(): void
     {
         [$pro, $patient] = $this->createProAndConsentedPatient();

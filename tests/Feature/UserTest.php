@@ -17,8 +17,7 @@ class UserTest extends TestCase
     use RefreshDatabase;
 
     // ─── ME ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function me_returns_user_with_profile(): void
     {
         $user = User::factory()->create();
@@ -30,7 +29,7 @@ class UserTest extends TestCase
             ->assertJsonStructure(['id', 'name', 'email', 'role', 'profile']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function me_hides_diary_password_hash(): void
     {
         $user = User::factory()->create();
@@ -42,15 +41,14 @@ class UserTest extends TestCase
         $this->assertArrayNotHasKey('diary_password_hash', $response->json('profile'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function me_requires_authentication(): void
     {
         $this->getJson('/api/me')->assertStatus(401);
     }
 
     // ─── UPDATE ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_update_name(): void
     {
         $user = User::factory()->create(['name' => 'Nome Antigo']);
@@ -63,7 +61,7 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $user->id, 'name' => 'Nome Novo']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_update_email(): void
     {
         $user = User::factory()->create(['email' => 'antigo@teste.com']);
@@ -76,7 +74,7 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', ['id' => $user->id, 'email' => 'novo@teste.com']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_update_password(): void
     {
         $user = User::factory()->create(['password' => bcrypt('SenhaAtual123')]);
@@ -92,7 +90,7 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check('NovaSenha123', $user->password));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function update_rejects_duplicate_email(): void
     {
         $user1 = User::factory()->create(['email' => 'user1@teste.com']);
@@ -105,7 +103,7 @@ class UserTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function update_allows_keeping_same_email(): void
     {
         $user = User::factory()->create(['email' => 'mesmo@teste.com']);
@@ -119,8 +117,7 @@ class UserTest extends TestCase
     }
 
     // ─── DESTROY ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_delete_account(): void
     {
         $user = User::factory()->create();
@@ -133,7 +130,7 @@ class UserTest extends TestCase
         $this->assertSoftDeleted('users', ['id' => $user->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function delete_removes_tokens(): void
     {
         $user = User::factory()->create();
@@ -146,7 +143,7 @@ class UserTest extends TestCase
         $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function update_password_requires_current_password(): void
     {
         $user = User::factory()->create(['password' => bcrypt('SenhaAtual123')]);
@@ -156,7 +153,7 @@ class UserTest extends TestCase
         ])->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function update_password_rejects_wrong_current_password(): void
     {
         $user = User::factory()->create(['password' => bcrypt('SenhaAtual123')]);
@@ -170,7 +167,7 @@ class UserTest extends TestCase
         $this->assertTrue(Hash::check('SenhaAtual123', $user->password));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function delete_account_erases_diary_and_moods(): void
     {
         $user = User::factory()->create();
@@ -189,7 +186,7 @@ class UserTest extends TestCase
         $this->assertDatabaseMissing('user_mood_tracking', ['id' => $mood->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function delete_account_anonymizes_user(): void
     {
         $user = User::factory()->create([
@@ -206,7 +203,7 @@ class UserTest extends TestCase
         $this->assertNotNull($row->deleted_at);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function deleted_email_can_be_reused(): void
     {
         $user = User::factory()->create(['email' => 'lucas@teste.com']);
@@ -220,7 +217,7 @@ class UserTest extends TestCase
         ])->assertStatus(201);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function delete_account_keeps_pro_tasks(): void
     {
         $pro     = User::factory()->pro()->create();

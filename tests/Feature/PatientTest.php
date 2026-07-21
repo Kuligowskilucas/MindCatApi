@@ -33,7 +33,7 @@ class PatientTest extends TestCase
         return [$pro, $patient];
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_can_get_linked_patient_summary(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -55,7 +55,7 @@ class PatientTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_cannot_get_unlinked_patient_summary(): void
     {
         $pro = User::factory()->pro()->create();
@@ -70,7 +70,7 @@ class PatientTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_cannot_get_summary_of_patient_without_consent(): void
     {
         $pro = User::factory()->pro()->create();
@@ -90,7 +90,7 @@ class PatientTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_cannot_access_summary_endpoint(): void
     {
         $patient = User::factory()->patient()->create();
@@ -100,7 +100,7 @@ class PatientTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function summary_requires_authentication(): void
     {
         $this->getJson('/api/patients/1/summary')->assertStatus(401);

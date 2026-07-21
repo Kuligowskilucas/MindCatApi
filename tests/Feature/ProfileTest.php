@@ -12,8 +12,7 @@ class ProfileTest extends TestCase
     use RefreshDatabase;
 
     // ─── SHOW ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function show_creates_profile_if_not_exists(): void
     {
         $user = User::factory()->create();
@@ -24,7 +23,7 @@ class ProfileTest extends TestCase
         $this->assertDatabaseHas('user_profiles', ['user_id' => $user->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function show_returns_existing_profile(): void
     {
         $user = User::factory()->create();
@@ -41,8 +40,7 @@ class ProfileTest extends TestCase
     }
 
     // ─── UPDATE ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_toggle_consent(): void
     {
         $user = User::factory()->create();
@@ -56,7 +54,7 @@ class ProfileTest extends TestCase
             ->assertJson(['consent_share_with_professional' => true]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_disable_consent(): void
     {
         $user = User::factory()->create();
@@ -74,8 +72,7 @@ class ProfileTest extends TestCase
     }
 
     // ─── SET DIARY PASSWORD ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_set_diary_password_first_time(): void
     {
         $user = User::factory()->create();   // sem perfil
@@ -88,7 +85,7 @@ class ProfileTest extends TestCase
             ->assertJson(['message' => 'Senha do diário atualizada com sucesso.']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_change_diary_password_with_current(): void
     {
         $user = User::factory()->create();
@@ -102,7 +99,7 @@ class ProfileTest extends TestCase
         $response->assertStatus(200);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function change_diary_password_fails_with_wrong_current(): void
     {
         $user = User::factory()->create();
@@ -116,7 +113,7 @@ class ProfileTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function diary_password_must_be_strong(): void
     {
         $user = User::factory()->create();

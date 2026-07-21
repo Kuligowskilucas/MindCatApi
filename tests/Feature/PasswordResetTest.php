@@ -13,8 +13,7 @@ class PasswordResetTest extends TestCase
     use RefreshDatabase;
 
     // ─── SEND CODE ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function send_code_returns_success_for_existing_email(): void
     {
         User::factory()->create(['email' => 'existe@teste.com']);
@@ -27,7 +26,7 @@ class PasswordResetTest extends TestCase
         $this->assertDatabaseHas('password_reset_codes', ['email' => 'existe@teste.com']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function send_code_returns_same_response_for_nonexistent_email(): void
     {
         $response = $this->postJson('/api/forgot-password', [
@@ -39,14 +38,14 @@ class PasswordResetTest extends TestCase
         $this->assertDatabaseMissing('password_reset_codes', ['email' => 'naoexiste@teste.com']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function send_code_requires_valid_email(): void
     {
         $this->postJson('/api/forgot-password', ['email' => ''])->assertStatus(422);
         $this->postJson('/api/forgot-password', ['email' => 'invalido'])->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function send_code_replaces_old_codes(): void
     {
         $user = User::factory()->create(['email' => 'teste@teste.com']);
@@ -59,8 +58,7 @@ class PasswordResetTest extends TestCase
     }
 
     // ─── RESET PASSWORD ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_reset_password_with_valid_code(): void
     {
         $user = User::factory()->create(['email' => 'teste@teste.com']);
@@ -90,7 +88,7 @@ class PasswordResetTest extends TestCase
         $this->assertDatabaseMissing('password_reset_codes', ['email' => 'teste@teste.com']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reset_fails_with_wrong_code(): void
     {
         $user = User::factory()->create(['email' => 'teste@teste.com']);
@@ -115,7 +113,7 @@ class PasswordResetTest extends TestCase
         $this->assertEquals(1, $record->attempts);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reset_blocks_after_max_attempts(): void
     {
         $user = User::factory()->create(['email' => 'teste@teste.com']);
@@ -137,7 +135,7 @@ class PasswordResetTest extends TestCase
         $this->assertDatabaseMissing('password_reset_codes', ['email' => 'teste@teste.com']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reset_fails_with_expired_code(): void
     {
         $user = User::factory()->create(['email' => 'teste@teste.com']);
@@ -158,7 +156,7 @@ class PasswordResetTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reset_validates_input(): void
     {
         $this->postJson('/api/reset-password', [])->assertStatus(422);
@@ -170,7 +168,7 @@ class PasswordResetTest extends TestCase
         ])->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function reset_password_revokes_existing_tokens(): void
     {
         $user = User::factory()->create(['email' => 'teste@teste.com']);
