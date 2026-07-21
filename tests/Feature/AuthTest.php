@@ -12,8 +12,7 @@ class AuthTest extends TestCase
     use RefreshDatabase;
 
     // ─── REGISTER ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_as_patient(): void
     {
         $response = $this->postJson('/api/register', [
@@ -33,7 +32,7 @@ class AuthTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_as_pro(): void
     {
         $response = $this->postJson('/api/register', [
@@ -47,7 +46,7 @@ class AuthTest extends TestCase
             ->assertJson(['user' => ['role' => 'pro']]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function register_defaults_to_patient_when_no_role(): void
     {
         $response = $this->postJson('/api/register', [
@@ -60,7 +59,7 @@ class AuthTest extends TestCase
             ->assertJson(['user' => ['role' => 'patient']]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function register_rejects_invalid_role(): void
     {
         $response = $this->postJson('/api/register', [
@@ -73,7 +72,7 @@ class AuthTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function register_requires_name_email_password(): void
     {
         $this->postJson('/api/register', [])->assertStatus(422);
@@ -81,7 +80,7 @@ class AuthTest extends TestCase
         $this->postJson('/api/register', ['name' => 'A', 'email' => 'a@b.com'])->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function register_rejects_duplicate_email(): void
     {
         User::factory()->create(['email' => 'usado@teste.com']);
@@ -95,7 +94,7 @@ class AuthTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function register_rejects_short_password(): void
     {
         $response = $this->postJson('/api/register', [
@@ -108,8 +107,7 @@ class AuthTest extends TestCase
     }
 
     // ─── LOGIN ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_login_with_correct_credentials(): void
     {
         $user = User::factory()->create(['password' => bcrypt('Senha123')]);
@@ -123,7 +121,7 @@ class AuthTest extends TestCase
             ->assertJsonStructure(['message', 'user', 'token']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function login_fails_with_wrong_password(): void
     {
         $user = User::factory()->create(['password' => bcrypt('Senha123')]);
@@ -136,7 +134,7 @@ class AuthTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function login_fails_with_nonexistent_email(): void
     {
         $response = $this->postJson('/api/login', [
@@ -148,8 +146,7 @@ class AuthTest extends TestCase
     }
 
     // ─── LOGOUT ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_logout(): void
     {
         $user = User::factory()->create();
@@ -162,15 +159,14 @@ class AuthTest extends TestCase
             ->assertJson(['message' => 'Logout realizado com sucesso!']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function logout_requires_authentication(): void
     {
         $this->postJson('/api/logout')->assertStatus(401);
     }
 
     // ─── USER PROFILE ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function authenticated_user_can_get_profile(): void
     {
         $user = User::factory()->create();
@@ -181,7 +177,7 @@ class AuthTest extends TestCase
             ->assertJson(['id' => $user->id, 'email' => $user->email]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function unauthenticated_user_cannot_get_profile(): void
     {
         $this->getJson('/api/user')->assertStatus(401);

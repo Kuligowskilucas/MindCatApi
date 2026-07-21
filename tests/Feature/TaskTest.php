@@ -33,8 +33,7 @@ class TaskTest extends TestCase
     }
 
     // ─── STORE (PRO) ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_can_create_task_for_linked_patient(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -51,7 +50,7 @@ class TaskTest extends TestCase
             ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_cannot_create_task_for_unlinked_patient(): void
     {
         $pro = User::factory()->pro()->create();
@@ -69,7 +68,7 @@ class TaskTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_cannot_create_task(): void
     {
         $patient = User::factory()->patient()->create();
@@ -82,7 +81,7 @@ class TaskTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function task_title_is_required(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -94,7 +93,7 @@ class TaskTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function task_title_max_120_chars(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -108,8 +107,7 @@ class TaskTest extends TestCase
     }
 
     // ─── INDEX ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_sees_own_tasks(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -127,7 +125,7 @@ class TaskTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_sees_assigned_tasks(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -145,7 +143,7 @@ class TaskTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_doesnt_see_other_patients_tasks(): void
     {
         [$pro, $patient1] = $this->createLinkedProAndPatient();
@@ -163,8 +161,7 @@ class TaskTest extends TestCase
     }
 
     // ─── MARK DONE (PATIENT) ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_can_mark_own_task_done(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -184,7 +181,7 @@ class TaskTest extends TestCase
         $this->assertNotNull($response->json('completed_at'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function patient_cannot_mark_other_patients_task(): void
     {
         [$pro, $patient1] = $this->createLinkedProAndPatient();
@@ -202,8 +199,7 @@ class TaskTest extends TestCase
     }
 
     // ─── DESTROY (PRO) ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_can_delete_own_task(): void
     {
         [$pro, $patient] = $this->createLinkedProAndPatient();
@@ -221,7 +217,7 @@ class TaskTest extends TestCase
         $this->assertSoftDeleted('tasks', ['id' => $task->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function pro_cannot_delete_other_pros_task(): void
     {
         [$pro1, $patient] = $this->createLinkedProAndPatient();
@@ -238,7 +234,7 @@ class TaskTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function tasks_require_authentication(): void
     {
         $this->getJson('/api/tasks')->assertStatus(401);

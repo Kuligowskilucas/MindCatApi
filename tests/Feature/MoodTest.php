@@ -13,8 +13,7 @@ class MoodTest extends TestCase
     use RefreshDatabase;
 
     // ─── STORE ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_mood(): void
     {
         $user = User::factory()->create();
@@ -30,7 +29,7 @@ class MoodTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_mood_with_description(): void
     {
         $user = User::factory()->create();
@@ -44,7 +43,7 @@ class MoodTest extends TestCase
             ->assertJson(['mood_description' => 'Dia incrível!']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_register_mood_twice_same_day(): void
     {
         $user = User::factory()->create();
@@ -58,7 +57,7 @@ class MoodTest extends TestCase
         $response->assertStatus(409);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function mood_level_must_be_between_1_and_5(): void
     {
         $user = User::factory()->create();
@@ -68,7 +67,7 @@ class MoodTest extends TestCase
         $this->actingAs($user)->postJson('/api/moods', ['mood_level' => -1])->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function mood_level_is_required(): void
     {
         $user = User::factory()->create();
@@ -77,8 +76,7 @@ class MoodTest extends TestCase
     }
 
     // ─── INDEX ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_list_moods(): void
     {
         $user = User::factory()->create();
@@ -95,7 +93,7 @@ class MoodTest extends TestCase
             ->assertJsonStructure(['data']);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_filter_moods_by_date(): void
     {
         $user = User::factory()->create();
@@ -119,7 +117,7 @@ class MoodTest extends TestCase
         $this->assertCount(1, $response->json('data'));
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_see_other_users_moods(): void
     {
         $user1 = User::factory()->create();
@@ -136,8 +134,7 @@ class MoodTest extends TestCase
     }
 
     // ─── DESTROY ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_delete_own_mood(): void
     {
         $user = User::factory()->create();
@@ -153,7 +150,7 @@ class MoodTest extends TestCase
         $this->assertDatabaseMissing('user_mood_tracking', ['id' => $mood->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_delete_other_users_mood(): void
     {
         $user1 = User::factory()->create();
@@ -168,7 +165,7 @@ class MoodTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function moods_require_authentication(): void
     {
         $this->postJson('/api/moods', ['mood_level' => 3])->assertStatus(401);

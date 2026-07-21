@@ -22,8 +22,7 @@ class DiaryTest extends TestCase
     }
 
     // ─── STORE ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_create_diary_entry(): void
     {
         $user = User::factory()->create();
@@ -42,7 +41,7 @@ class DiaryTest extends TestCase
         $this->assertEquals('Hoje foi um bom dia.', $entry->content);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function diary_entry_requires_content(): void
     {
         $user = User::factory()->create();
@@ -54,7 +53,7 @@ class DiaryTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function diary_entry_rejects_content_over_50000_chars(): void
     {
         $user = User::factory()->create();
@@ -67,8 +66,7 @@ class DiaryTest extends TestCase
     }
 
     // ─── LIST (INDEX) ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_list_entries_with_correct_password(): void
     {
         $user = $this->createPatientWithDiaryPassword();
@@ -84,7 +82,7 @@ class DiaryTest extends TestCase
         $this->assertCount(2, $response->json());
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function list_fails_with_wrong_password(): void
     {
         $user = $this->createPatientWithDiaryPassword();
@@ -96,7 +94,7 @@ class DiaryTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function list_fails_without_password(): void
     {
         $user = $this->createPatientWithDiaryPassword();
@@ -106,7 +104,7 @@ class DiaryTest extends TestCase
         $response->assertStatus(422);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_see_other_users_entries(): void
     {
         $user1 = $this->createPatientWithDiaryPassword();
@@ -123,8 +121,7 @@ class DiaryTest extends TestCase
     }
 
     // ─── DESTROY ───
-
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_delete_own_entry(): void
     {
         $user = $this->createPatientWithDiaryPassword();
@@ -138,7 +135,7 @@ class DiaryTest extends TestCase
         $this->assertDatabaseMissing('diary_entries', ['id' => $entry->id]);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function delete_fails_with_wrong_password(): void
     {
         $user = $this->createPatientWithDiaryPassword();
@@ -151,7 +148,7 @@ class DiaryTest extends TestCase
         $response->assertStatus(403);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_delete_other_users_entry(): void
     {
         $user1 = $this->createPatientWithDiaryPassword();
@@ -165,7 +162,7 @@ class DiaryTest extends TestCase
         $response->assertStatus(404);
     }
 
-    /** @test */
+    #[\PHPUnit\Framework\Attributes\Test]
     public function store_requires_authentication(): void
     {
         $this->postJson('/api/diary', ['content' => 'teste'])->assertStatus(401);
