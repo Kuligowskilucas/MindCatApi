@@ -50,22 +50,4 @@ class LinkService
             ->where('patient_id', $patientId)
             ->update(['active' => false]);
     }
-
-    public function searchPatient(string $email): array
-    {
-        $patient = User::where('email', $email)
-            ->where('role', 'patient')
-            ->first();
-
-        if (!$patient) {
-            throw new HttpException(404, 'Paciente não encontrado.');
-        }
-
-        return [
-            'id'      => $patient->id,
-            'name'    => $patient->name,
-            'email'   => $patient->email,
-            'consent' => (bool) optional($patient->profile)->consent_share_with_professional,
-        ];
-    }
 }

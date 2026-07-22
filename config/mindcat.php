@@ -28,7 +28,11 @@ return [
         'bridge_app_key' => (bool) env('MINDCAT_DIARY_BRIDGE_APP_KEY', false),
 
         'cipher' => env('MINDCAT_DIARY_CIPHER', 'AES-256-CBC'),
+    ],
 
+    'invite' => [
+        'ttl_hours'   => (int) env('MINDCAT_INVITE_TTL_HOURS', 72),
+        'code_length' => (int) env('MINDCAT_INVITE_CODE_LENGTH', 8),
     ],
 
 ];

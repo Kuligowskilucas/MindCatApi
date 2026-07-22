@@ -12,6 +12,7 @@ use App\Http\Controllers\PatientController;
 use App\Http\Controllers\CredentialController;
 use App\Http\Controllers\AdminCredentialController;
 use App\Http\Controllers\PasswordResetController;
+use App\Http\Controllers\InviteController;
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
@@ -45,8 +46,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/my-professionals', [LinkController::class, 'indexProfessionals']);
 
-    // Credencial do profissional (self). Só role:pro — o pro ainda NÃO
-    // aprovado precisa acessar para submeter e acompanhar o status.
+    Route::middleware('role:patient')->group(function () {
+        Route::get('/invites', [InviteController::class, 'index']);
+        Route::post('/invites', [InviteController::class, 'store'])->middleware('throttle:10,1');
+        Route::delete('/invites', [InviteController::class, 'destroy']);
+    });
+
     Route::middleware('role:pro')->group(function () {
         Route::get('/credentials/me', [CredentialController::class, 'me']);
         Route::post('/credentials', [CredentialController::class, 'store'])
@@ -55,7 +60,6 @@ Route::middleware('auth:sanctum')->group(function () {
             ->middleware('throttle:10,1');
     });
 
-    // Admin: validação de credenciais (Fase 5c).
     Route::middleware('role:admin')->prefix('admin')->group(function () {
         Route::get('/credentials', [AdminCredentialController::class, 'index']);
         Route::get('/credentials/{credential}', [AdminCredentialController::class, 'show']);
@@ -63,13 +67,11 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/credentials/{credential}/reject', [AdminCredentialController::class, 'reject']);
     });
 
-    // Rotas clínicas: exigem role:pro E credencial aprovada (pro.verified).
     Route::middleware(['role:pro', 'pro.verified'])->group(function () {
-        Route::post('/links', [LinkController::class, 'store']);
         Route::get('/patients', [LinkController::class, 'indexPatients']);
         Route::delete('/links/{patientId}', [LinkController::class, 'destroy']);
-        Route::get('/patients/search', [LinkController::class, 'searchPatient'])
-            ->middleware('throttle:10,1');
+        Route::post('/invites/redeem', [InviteController::class, 'redeem'])
+            ->middleware('throttle:6,1');
         Route::post('/tasks', [TaskController::class, 'store']);
         Route::get('/patients/{id}/summary', [PatientController::class, 'summary']);
         Route::delete('/tasks/{task}', [TaskController::class, 'destroy']);
