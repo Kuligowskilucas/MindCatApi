@@ -16,17 +16,30 @@ class EnsureProVerified
 {
     public function handle(Request $request, Closure $next)
     {
-        $user = $request->user();
-
-        $approved = $user?->credential?->status === ProfessionalCredential::STATUS_APPROVED;
-
-        if (!$approved) {
-            return response()->json([
-                'message' => 'Sua credencial profissional ainda não foi aprovada.',
-                'code'    => 'credential_not_approved',
-            ], 403);
+        if ($this->credentialActive($request->user()?->credential)) {
+            return $next($request);
         }
 
-        return $next($request);
+        return response()->json([
+            'message' => 'Sua credencial profissional ainda não foi aprovada.',
+            'code'    => 'credential_not_approved',
+        ], 403);
+    }
+
+    private function credentialActive(?ProfessionalCredential $credential): bool
+    {
+        if ($credential?->status !== ProfessionalCredential::STATUS_APPROVED) {
+            return false;
+        }
+
+        if ($credential->next_review_at === null) {
+            return true;
+        }
+
+        $graceDays = (int) config('mindcat.credential.grace_days');
+
+        return now()->lessThanOrEqualTo(
+            $credential->next_review_at->copy()->addDays($graceDays)
+        );
     }
 }

@@ -34,5 +34,16 @@ return [
         'ttl_hours'   => (int) env('MINDCAT_INVITE_TTL_HOURS', 72),
         'code_length' => (int) env('MINDCAT_INVITE_CODE_LENGTH', 8),
     ],
+    'credential' => [
+        'grace_days' => (int) env('MINDCAT_CREDENTIAL_GRACE_DAYS', 7),
+    ],
+    'auth' => [
+        'access_ttl_minutes'    => (int) env('MINDCAT_ACCESS_TTL_MINUTES', 30),
+        'refresh_ttl_days'      => (int) env('MINDCAT_REFRESH_TTL_DAYS', 30),
+        'refresh_cookie'        => env('MINDCAT_REFRESH_COOKIE', 'mindcat_refresh'),
+        'refresh_cookie_path'   => env('MINDCAT_REFRESH_COOKIE_PATH', '/api/refresh'),
+        'refresh_cookie_domain' => env('MINDCAT_REFRESH_COOKIE_DOMAIN'),
+        'refresh_cookie_secure' => (bool) env('MINDCAT_REFRESH_COOKIE_SECURE', false),
+    ],
 
 ];

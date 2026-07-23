@@ -18,8 +18,9 @@ Route::post('/register', [AuthController::class, 'register'])->middleware('throt
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/forgot-password', [PasswordResetController::class, 'sendCode'])->middleware('throttle:3,1');
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:5,1');
+Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
 
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'token.access'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/profile', [ProfileController::class, 'show']);
