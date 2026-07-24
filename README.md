@@ -72,7 +72,7 @@ Tests run against SQLite in memory with fixed `APP_KEY` and `MINDCAT_DIARY_KEY` 
 ## Related repositories
 
 - Web client: https://github.com/Kuligowskilucas/MindCatWeb
-- Mobile client (frozen): https://github.com/Kuligowskilucas/mindcat
+- Mobile client (frozen): https://github.com/Kuligowskilucas/MindCatApp
 
 ## Status
 
