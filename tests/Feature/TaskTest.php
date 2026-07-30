@@ -240,4 +240,26 @@ class TaskTest extends TestCase
         $this->getJson('/api/tasks')->assertStatus(401);
         $this->postJson('/api/tasks', [])->assertStatus(401);
     }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function pro_doesnt_see_assigned_tasks_of_unlinked_patient(): void
+    {
+        [$pro, $patient] = $this->createLinkedProAndPatient();
+
+        Task::create([
+            'pro_id'     => $pro->id,
+            'patient_id' => $patient->id,
+            'title'      => 'Tarefa criada',
+            'status'     => 'active',
+        ]);
+
+        ProPatientLink::where('pro_id', $pro->id)
+            ->where('patient_id', $patient->id)
+            ->update(['active' => false]);
+
+        $response = $this->actingAs($pro)->getJson('/api/tasks?scope=assigned');
+
+        $response->assertStatus(200);
+        $this->assertCount(0, $response->json('data'));
+    }
 }

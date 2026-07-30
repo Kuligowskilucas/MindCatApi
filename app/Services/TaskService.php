@@ -28,9 +28,13 @@ class TaskService
     public function index(User $user, string $scope)
     {
         if ($user->role === 'pro' && $scope === 'assigned') {
-            // O profissional só enxerga tarefas de pacientes que
-            // ainda consentem em compartilhar dados com ele.
             return Task::where('pro_id', $user->id)
+                ->whereIn('patient_id', function ($q) use ($user) {
+                    $q->select('patient_id')
+                      ->from('pro_patient_links')
+                      ->where('pro_id', $user->id)
+                      ->where('active', true);
+                })
                 ->whereHas('patient.profile', fn ($q) =>
                     $q->where('consent_share_with_professional', true)
                 )

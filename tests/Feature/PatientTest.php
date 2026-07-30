@@ -44,6 +44,21 @@ class PatientTest extends TestCase
             'recorded_at' => now(),
         ]);
 
+        Task::create([
+            'pro_id'       => $pro->id,
+            'patient_id'   => $patient->id,
+            'title'        => 'Respirar',
+            'status'       => 'done',
+            'completed_at' => now(),
+        ]);
+
+        Task::create([
+            'pro_id'     => $pro->id,
+            'patient_id' => $patient->id,
+            'title'      => 'Diário',
+            'status'     => 'active',
+        ]);
+
         $response = $this->actingAs($pro)->getJson("/api/patients/{$patient->id}/summary");
 
         $response->assertStatus(200)
@@ -52,7 +67,8 @@ class PatientTest extends TestCase
                 'moods',
                 'exercises_completed',
                 'diary',
-            ]);
+            ])
+            ->assertJsonPath('exercises_completed', 1);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

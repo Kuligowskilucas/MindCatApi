@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\User;
-use App\Models\UserActivity;
+use App\Models\Task;
 use App\Models\UserMoodTracking;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -24,8 +24,9 @@ class PatientService
                                         ->orderByDesc('recorded_at')
                                         ->limit(14)
                                         ->get(),
-            'exercises_completed' => UserActivity::where('user_id', $patient->id)
-                                        ->where('is_completed', 1)
+            'exercises_completed' => Task::where('patient_id', $patient->id)
+                                        ->where('pro_id', $pro->id)
+                                        ->where('status', 'done')
                                         ->count(),
             'diary'               => $patient->diaryEntries()
                                         ->select('id', 'created_at')
