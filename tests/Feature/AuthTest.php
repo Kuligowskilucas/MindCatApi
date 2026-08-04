@@ -23,7 +23,7 @@ class AuthTest extends TestCase
         ]);
 
         $response->assertStatus(201)
-            ->assertJsonStructure(['message', 'user', 'token'])
+            ->assertJsonStructure(['message', 'user'])->assertJsonMissingPath('token')
             ->assertJson(['user' => ['role' => 'patient']]);
 
         $this->assertDatabaseHas('users', [

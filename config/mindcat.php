@@ -30,6 +30,8 @@ return [
         'cipher' => env('MINDCAT_DIARY_CIPHER', 'AES-256-CBC'),
     ],
 
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
+
     'invite' => [
         'ttl_hours'   => (int) env('MINDCAT_INVITE_TTL_HOURS', 72),
         'code_length' => (int) env('MINDCAT_INVITE_CODE_LENGTH', 8),

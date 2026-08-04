@@ -13,12 +13,21 @@ use App\Http\Controllers\CredentialController;
 use App\Http\Controllers\AdminCredentialController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\EmailVerificationController;
+
+
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/forgot-password', [PasswordResetController::class, 'sendCode'])->middleware('throttle:3,1');
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:5,1');
 Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
+Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
+Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+    ->middleware('throttle:6,1')
+    ->name('verification.send');
 
 Route::middleware(['auth:sanctum', 'token.access'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);

@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use App\Exceptions\EmailNotVerifiedException;
+use Illuminate\Auth\Events\Registered;
 
 class AuthService
 {
@@ -23,9 +25,10 @@ class AuthService
             'role'     => $data['role'] ?? 'patient',
         ]);
 
+        event(new Registered($user));
+
         return [
-            'user'   => $this->formatUser($user),
-            'tokens' => $this->issue($user),
+            'user' => $this->formatUser($user),
         ];
     }
 
@@ -37,6 +40,10 @@ class AuthService
             throw ValidationException::withMessages([
                 'email' => ['Email e/ou Senha incorretos.'],
             ]);
+        }
+
+        if (!$user->hasVerifiedEmail()) {
+            throw new EmailNotVerifiedException();
         }
 
         return [

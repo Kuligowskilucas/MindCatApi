@@ -19,7 +19,10 @@ class AuthController extends Controller
     {
         $result = $this->authService->register($request->validated());
 
-        return $this->respondWithTokens($result, 'Usuário registrado com sucesso', 201);
+        return response()->json([
+            'message' => 'Conta criada. Enviamos um link de confirmação para o seu e-mail.',
+            'user'    => $result['user'],
+        ], 201);
     }
 
     public function login(LoginRequest $request): JsonResponse
