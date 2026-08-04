@@ -25,7 +25,7 @@ mkdir -p storage/backups
 BACKUP="storage/backups/pre-deploy-$(date +%Y%m%d-%H%M%S).sql.gz"
 CNF="$(mktemp)"
 printf '[client]\nuser=%s\npassword=%s\n' "$DB_USERNAME" "$DB_PASSWORD" > "$CNF"
-mysqldump --defaults-extra-file="$CNF" "$DB_DATABASE" | gzip > "$BACKUP"
+mysqldump --defaults-extra-file="$CNF" --single-transaction --no-tablespaces --quick "$DB_DATABASE" | gzip > "$BACKUP"
 rm -f "$CNF"
 echo "    salvo em $BACKUP"
 
