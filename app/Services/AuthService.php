@@ -9,12 +9,17 @@ use Illuminate\Validation\ValidationException;
 use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use App\Exceptions\EmailNotVerifiedException;
+use App\Services\LoginOtpService;
 use Illuminate\Auth\Events\Registered;
 
 class AuthService
 {
     public const ABILITY_ACCESS  = 'access';
     public const ABILITY_REFRESH = 'refresh';
+
+    public function __construct(
+        private LoginOtpService $loginOtp
+    ) {}
 
     public function register(array $data): array
     {
@@ -46,10 +51,32 @@ class AuthService
             throw new EmailNotVerifiedException();
         }
 
+        if ($user->two_factor_enabled) {
+            return [
+                'two_factor_required' => true,
+                'challenge'           => $this->loginOtp->start($user),
+            ];
+        }
+
         return [
             'user'   => $this->formatUser($user),
             'tokens' => $this->issue($user),
         ];
+    }
+
+    public function completeTwoFactor(string $challenge, string $code): array
+    {
+        $user = $this->loginOtp->verify($challenge, $code);
+
+        return [
+            'user'   => $this->formatUser($user),
+            'tokens' => $this->issue($user),
+        ];
+    }
+
+    public function resendTwoFactor(string $challenge): void
+    {
+        $this->loginOtp->resend($challenge);
     }
 
     /**
@@ -141,10 +168,11 @@ class AuthService
     private function formatUser(User $user): array
     {
         return [
-            'id'    => $user->id,
-            'name'  => $user->name,
-            'email' => $user->email,
-            'role'  => $user->role,
+            'id'                 => $user->id,
+            'name'               => $user->name,
+            'email'              => $user->email,
+            'role'               => $user->role,
+            'two_factor_enabled' => (bool) $user->two_factor_enabled,
         ];
     }
 }

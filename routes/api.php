@@ -18,10 +18,15 @@ use App\Http\Controllers\EmailVerificationController;
 
 
 Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+Route::post('/login/verify-otp', [AuthController::class, 'verifyOtp'])->middleware('throttle:5,1');
+Route::post('/login/resend-otp', [AuthController::class, 'resendOtp'])->middleware('throttle:3,1');
+
 Route::post('/forgot-password', [PasswordResetController::class, 'sendCode'])->middleware('throttle:3,1');
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware('throttle:5,1');
 Route::post('/refresh', [AuthController::class, 'refresh'])->middleware('throttle:30,1');
+
 Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
@@ -35,6 +40,9 @@ Route::middleware(['auth:sanctum', 'token.access'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::put('/profile/diary-password', [ProfileController::class, 'setDiaryPassword'])
+        ->middleware('throttle:5,1');
+
+    Route::put('/profile/two-factor', [ProfileController::class, 'setTwoFactor'])
         ->middleware('throttle:5,1');
 
     Route::get('/user', [AuthController::class, 'userProfile']);

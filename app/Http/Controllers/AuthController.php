@@ -8,6 +8,9 @@ use App\Services\AuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Cookie;
+use App\Http\Requests\Auth\ResendOtpRequest;
+use App\Http\Requests\Auth\VerifyOtpRequest;
+
 
 class AuthController extends Controller
 {
@@ -29,7 +32,33 @@ class AuthController extends Controller
     {
         $result = $this->authService->login($request->validated());
 
+        if ($result['two_factor_required'] ?? false) {
+            return response()->json([
+                'two_factor_required' => true,
+                'challenge'           => $result['challenge'],
+                'message'             => 'Enviamos um código de verificação para o seu e-mail.',
+            ]);
+        }
+
         return $this->respondWithTokens($result, 'Login realizado com sucesso!');
+    }
+
+    public function verifyOtp(VerifyOtpRequest $request): JsonResponse
+    {
+        $data = $request->validated();
+
+        $result = $this->authService->completeTwoFactor($data['challenge'], $data['code']);
+
+        return $this->respondWithTokens($result, 'Login realizado com sucesso!');
+    }
+
+    public function resendOtp(ResendOtpRequest $request): JsonResponse
+    {
+        $this->authService->resendTwoFactor($request->validated()['challenge']);
+
+        return response()->json([
+            'message' => 'Enviamos um novo código para o seu e-mail.',
+        ]);
     }
 
     /** O refresh token só trafega no cookie HttpOnly, nunca no corpo. */

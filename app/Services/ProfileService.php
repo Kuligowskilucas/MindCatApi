@@ -35,4 +35,14 @@ class ProfileService
         $profile->diary_password_hash = Hash::make($newPassword);
         $profile->save();
     }
+
+    public function setTwoFactor(User $user, bool $enabled, string $password): void
+    {
+        if (!Hash::check($password, $user->password)) {
+            throw new HttpException(403, 'Senha inválida.');
+        }
+
+        $user->two_factor_enabled = $enabled;
+        $user->save();
+    }
 }

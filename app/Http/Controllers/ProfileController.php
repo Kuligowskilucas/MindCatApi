@@ -7,6 +7,8 @@ use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Services\ProfileService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use App\Http\Requests\Profile\SetTwoFactorRequest;
+
 
 class ProfileController extends Controller
 {
@@ -41,6 +43,24 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Senha do diário atualizada com sucesso.',
+        ]);
+    }
+
+    public function setTwoFactor(SetTwoFactorRequest $request): JsonResponse
+    {
+        $enabled = (bool) $request->validated()['enabled'];
+
+        $this->profileService->setTwoFactor(
+            $request->user(),
+            $enabled,
+            $request->validated()['password']
+        );
+
+        return response()->json([
+            'message'            => $enabled
+                ? 'Verificação em duas etapas ativada.'
+                : 'Verificação em duas etapas desativada.',
+            'two_factor_enabled' => $enabled,
         ]);
     }
 }

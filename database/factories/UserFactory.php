@@ -52,4 +52,11 @@ class UserFactory extends Factory
     {
         return $this->state(fn () => ['email_verified_at' => null]);
     }
+
+    public function twoFactor(): static
+    {
+        return $this->afterCreating(function ($user) {
+            $user->forceFill(['two_factor_enabled' => true])->save();
+        });
+    }
 }

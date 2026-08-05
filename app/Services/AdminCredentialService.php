@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\CredentialDocument;
 use App\Models\ProfessionalCredential;
 use App\Models\User;
+use App\Notifications\CredentialApproved;
+use App\Notifications\CredentialRejected;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
@@ -68,6 +70,8 @@ class AdminCredentialService
             'next_review_at'      => now()->addYear(),
         ]);
 
+        $credential->user->notify(new CredentialApproved($credential));
+
         return $credential->fresh();
     }
 
@@ -85,6 +89,8 @@ class AdminCredentialService
             'verified_at'         => now(),
             'next_review_at'      => null,
         ]);
+
+        $credential->user->notify(new CredentialRejected($credential));
 
         return $credential->fresh();
     }
