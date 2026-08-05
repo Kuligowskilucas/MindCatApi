@@ -28,6 +28,6 @@ class CredentialApproved extends Notification
             ->line('Sua credencial profissional foi validada pela nossa equipe.')
             ->line('Seu acesso clínico está liberado: você já pode acompanhar pacientes e tarefas no MindCat.')
             ->action('Acessar o painel', $url)
-            ->line('Obrigado por fazer parte do MindCat.');
+            ->salutation("Atenciosamente,\nEquipe MindCat");
     }
 }

@@ -32,8 +32,8 @@ class CredentialRejected extends Notification
         }
 
         return $mail
-            ->line('Você pode corrigir os pontos apontados e reenviar seus documentos para uma nova análise.')
             ->action('Reenviar documentos', $url)
-            ->line('Assim que reenviar, faremos uma nova avaliação.');
+            ->line('Assim que reenviar, faremos uma nova avaliação.')
+            ->salutation("Atenciosamente,\nEquipe MindCat");
     }
 }

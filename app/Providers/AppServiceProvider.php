@@ -50,7 +50,8 @@ class AppServiceProvider extends ServiceProvider
                 ->greeting('Olá!')
                 ->line('Obrigado por criar sua conta no MindCat. Confirme seu e-mail para ativar o acesso.')
                 ->action('Confirmar e-mail', $url)
-                ->line('O link expira em 60 minutos. Se você não criou esta conta, ignore este e-mail.');
+                ->line('O link expira em 60 minutos. Se você não criou esta conta, ignore este e-mail.')
+                ->salutation("Atenciosamente,\nEquipe MindCat");
         });
     }
 }
