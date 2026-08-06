@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 
 class AppServiceProvider extends ServiceProvider
@@ -52,6 +54,18 @@ class AppServiceProvider extends ServiceProvider
                 ->action('Confirmar e-mail', $url)
                 ->line('O link expira em 60 minutos. Se você não criou esta conta, ignore este e-mail.')
                 ->salutation("Atenciosamente,\nEquipe MindCat");
+        });
+
+        DB::listen(function (\Illuminate\Database\Events\QueryExecuted $query): void {
+            if (! config('logging.queries')) {
+                return;
+            }
+
+            Log::debug('query', [
+                'sql'        => $query->sql,
+                'time_ms'    => $query->time,
+                'connection' => $query->connectionName,
+            ]);
         });
     }
 }

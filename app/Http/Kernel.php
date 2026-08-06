@@ -40,6 +40,7 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
+            \App\Http\Middleware\AssignRequestContext::class,
             \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
@@ -67,5 +68,6 @@ class Kernel extends HttpKernel
         'role' => \App\Http\Middleware\EnsureUserRole::class,
         'pro.verified' => \App\Http\Middleware\EnsureProVerified::class,
         'token.access' => \App\Http\Middleware\EnsureAccessToken::class,
+        'log.user' => \App\Http\Middleware\ShareUserContext::class,
     ];
 }

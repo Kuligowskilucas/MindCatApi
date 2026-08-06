@@ -34,7 +34,7 @@ Route::post('/email/verification-notification', [EmailVerificationController::cl
     ->middleware('throttle:6,1')
     ->name('verification.send');
 
-Route::middleware(['auth:sanctum', 'token.access'])->group(function () {
+Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     Route::get('/profile', [ProfileController::class, 'show']);
