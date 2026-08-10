@@ -39,6 +39,9 @@ return [
     'credential' => [
         'grace_days' => (int) env('MINDCAT_CREDENTIAL_GRACE_DAYS', 7),
     ],
+    'backup' => [
+        'keep_days' => (int) env('MINDCAT_BACKUP_KEEP_DAYS', 7),
+    ],
     'auth' => [
         'access_ttl_minutes'    => (int) env('MINDCAT_ACCESS_TTL_MINUTES', 30),
         'refresh_ttl_days'      => (int) env('MINDCAT_REFRESH_TTL_DAYS', 30),

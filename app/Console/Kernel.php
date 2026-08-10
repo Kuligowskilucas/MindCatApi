@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('mindcat:review-credentials')->daily();
+        $schedule->command('mindcat:backup-database')->timezone('America/Sao_Paulo')->dailyAt('03:00');
     }
 
     /**
