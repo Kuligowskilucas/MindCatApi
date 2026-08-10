@@ -29,6 +29,8 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            Route::get('/up', \App\Http\Controllers\HealthController::class);
+
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api.php'));
