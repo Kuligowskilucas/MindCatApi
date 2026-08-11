@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\ProfessionalCredential;
+use App\Notifications\CredentialExpired;
 use Illuminate\Console\Command;
 
 class ReviewCredentials extends Command
@@ -19,12 +20,13 @@ class ReviewCredentials extends Command
 
         $threshold = now()->subDays($graceDays);
 
-        $query = ProfessionalCredential::query()
+        $credentials = ProfessionalCredential::query()
             ->where('status', ProfessionalCredential::STATUS_APPROVED)
             ->whereNotNull('next_review_at')
-            ->where('next_review_at', '<', $threshold);
+            ->where('next_review_at', '<', $threshold)
+            ->get();
 
-        $total = $query->count();
+        $total = $credentials->count();
 
         if ($total === 0) {
             $this->info('Nada a fazer: nenhuma credencial vencida além da carência.');
@@ -38,9 +40,12 @@ class ReviewCredentials extends Command
             return self::SUCCESS;
         }
 
-        $affected = $query->update(['status' => ProfessionalCredential::STATUS_EXPIRED]);
+        foreach ($credentials as $credential) {
+            $credential->update(['status' => ProfessionalCredential::STATUS_EXPIRED]);
+            $credential->user?->notify(new CredentialExpired($credential));
+        }
 
-        $this->info("Expiradas: {$affected} (carência de {$graceDays} dia(s)).");
+        $this->info("Expiradas: {$total} (carência de {$graceDays} dia(s)).");
 
         return self::SUCCESS;
     }

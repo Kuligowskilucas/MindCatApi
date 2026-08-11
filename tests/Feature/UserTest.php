@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 use App\Models\DiaryEntry;
 use App\Models\UserMoodTracking;
+use App\Models\CredentialDocument;
 use App\Models\Task;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class UserTest extends TestCase
 {
@@ -141,6 +143,45 @@ class UserTest extends TestCase
         $this->actingAs($user)->deleteJson('/api/user/delete');
 
         $this->assertDatabaseMissing('personal_access_tokens', ['tokenable_id' => $user->id]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function delete_account_removes_credential_documents_from_disk(): void
+    {
+        Storage::fake('local');
+
+        $pro = User::factory()->pro()->create();
+
+        $crpPath  = 'credentials/' . $pro->id . '/crp.pdf';
+        $epsiPath = 'credentials/' . $pro->id . '/epsi.pdf';
+        Storage::disk('local')->put($crpPath, 'conteudo-crp');
+        Storage::disk('local')->put($epsiPath, 'conteudo-epsi');
+
+        $pro->credential->documents()->create([
+            'kind'          => CredentialDocument::KIND_CRP_CARD,
+            'storage_path'  => $crpPath,
+            'original_name' => 'crp.pdf',
+            'mime'          => 'application/pdf',
+            'size'          => 12,
+        ]);
+        $pro->credential->documents()->create([
+            'kind'          => CredentialDocument::KIND_EPSI_PROOF,
+            'storage_path'  => $epsiPath,
+            'original_name' => 'epsi.pdf',
+            'mime'          => 'application/pdf',
+            'size'          => 12,
+        ]);
+
+        Storage::disk('local')->assertExists($crpPath);
+        Storage::disk('local')->assertExists($epsiPath);
+
+        $this->actingAs($pro)->deleteJson('/api/user/delete')->assertStatus(200);
+
+        Storage::disk('local')->assertMissing($crpPath);
+        Storage::disk('local')->assertMissing($epsiPath);
+
+        $this->assertDatabaseMissing('credential_documents', ['storage_path' => $crpPath]);
+        $this->assertDatabaseMissing('professional_credentials', ['user_id' => $pro->id]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

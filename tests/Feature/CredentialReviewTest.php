@@ -7,6 +7,8 @@ use App\Models\User;
 use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use App\Notifications\CredentialExpired;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
@@ -41,6 +43,29 @@ class CredentialReviewTest extends TestCase
         $this->artisan('mindcat:review-credentials')->assertSuccessful();
 
         $this->assertSame(ProfessionalCredential::STATUS_EXPIRED, $this->statusOf($pro));
+    }
+
+    public function test_command_notifies_pro_when_credential_expires(): void
+    {
+        Notification::fake();
+
+        $pro = $this->proWithReview(now()->subDays(8));
+
+        $this->artisan('mindcat:review-credentials')->assertSuccessful();
+
+        $this->assertSame(ProfessionalCredential::STATUS_EXPIRED, $this->statusOf($pro));
+        Notification::assertSentTo($pro, CredentialExpired::class);
+    }
+
+    public function test_command_does_not_notify_within_grace(): void
+    {
+        Notification::fake();
+
+        $this->proWithReview(now()->subDays(3));
+
+        $this->artisan('mindcat:review-credentials')->assertSuccessful();
+
+        Notification::assertNothingSent();
     }
 
     public function test_command_does_not_expire_within_grace(): void

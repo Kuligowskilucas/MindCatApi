@@ -68,6 +68,7 @@ class AdminCredentialService
             'verified_by'         => $admin->id,
             'verified_at'         => now(),
             'next_review_at'      => now()->addYear(),
+            'review_reminder_sent_at' => null,
         ]);
 
         $credential->user->notify(new CredentialApproved($credential));

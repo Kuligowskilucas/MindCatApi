@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\DiaryEntry;
+use App\Models\ProfessionalCredential;
 use App\Models\ProPatientLink;
 use App\Models\User;
 use App\Models\UserMoodTracking;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class UserService
@@ -68,7 +70,9 @@ class UserService
      */
     public function destroy(User $user): void
     {
-        DB::transaction(function () use ($user) {
+        $credentialDocumentPaths = [];
+
+        DB::transaction(function () use ($user, &$credentialDocumentPaths) {
             DiaryEntry::withTrashed()
                 ->where('user_id', $user->id)
                 ->forceDelete();
@@ -79,6 +83,20 @@ class UserService
 
             ProPatientLink::where('patient_id', $user->id)->update(['active' => false]);
             ProPatientLink::where('pro_id', $user->id)->update(['active' => false]);
+
+            $credential = ProfessionalCredential::withTrashed()
+                ->where('user_id', $user->id)
+                ->first();
+
+            if ($credential) {
+                $credentialDocumentPaths = $credential->documents
+                    ->pluck('storage_path')
+                    ->filter()
+                    ->all();
+
+                $credential->documents()->delete();
+                $credential->forceDelete();
+            }
 
             if ($user->profile) {
                 $user->profile->forceFill([
@@ -97,5 +115,9 @@ class UserService
 
             $user->delete();
         });
+
+        foreach ($credentialDocumentPaths as $path) {
+            Storage::disk('local')->delete($path);
+        }
     }
 }

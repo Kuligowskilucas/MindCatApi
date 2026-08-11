@@ -37,7 +37,8 @@ return [
         'code_length' => (int) env('MINDCAT_INVITE_CODE_LENGTH', 8),
     ],
     'credential' => [
-        'grace_days' => (int) env('MINDCAT_CREDENTIAL_GRACE_DAYS', 7),
+        'grace_days'    => (int) env('MINDCAT_CREDENTIAL_GRACE_DAYS', 7),
+        'reminder_days' => (int) env('MINDCAT_CREDENTIAL_REMINDER_DAYS', 14),
     ],
     'backup' => [
         'keep_days' => (int) env('MINDCAT_BACKUP_KEEP_DAYS', 7),

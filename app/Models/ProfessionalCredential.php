@@ -47,6 +47,7 @@ class ProfessionalCredential extends Model
         'verified_at',
         'verified_snapshot',
         'next_review_at',
+        'review_reminder_sent_at',
         'submitted_at',
     ];
 
@@ -54,6 +55,7 @@ class ProfessionalCredential extends Model
         'epsi_registered'   => 'boolean',
         'verified_at'       => 'datetime',
         'next_review_at'    => 'datetime',
+        'review_reminder_sent_at' => 'datetime',
         'submitted_at'      => 'datetime',
         'verified_snapshot' => 'array',
     ];
