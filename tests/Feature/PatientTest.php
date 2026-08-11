@@ -66,7 +66,6 @@ class PatientTest extends TestCase
                 'patient' => ['id', 'name'],
                 'moods',
                 'exercises_completed',
-                'diary',
             ])
             ->assertJsonPath('exercises_completed', 1);
     }

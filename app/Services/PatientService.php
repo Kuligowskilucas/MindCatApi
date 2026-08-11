@@ -28,11 +28,6 @@ class PatientService
                                         ->where('pro_id', $pro->id)
                                         ->where('status', 'done')
                                         ->count(),
-            'diary'               => $patient->diaryEntries()
-                                        ->select('id', 'created_at')
-                                        ->orderByDesc('created_at')
-                                        ->limit(10)
-                                        ->get(),
         ];
     }
 }

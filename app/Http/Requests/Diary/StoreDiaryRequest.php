@@ -14,7 +14,8 @@ class StoreDiaryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'content' => 'required|string|max:50000',
+            'content'        => 'required|string|max:50000',
+            'diary_password' => 'required|string',
         ];
     }
 
@@ -23,6 +24,7 @@ class StoreDiaryRequest extends FormRequest
         return [
             'content.required' => 'O conteúdo é obrigatório.',
             'content.max'      => 'O conteúdo não pode exceder 50.000 caracteres.',
+            'diary_password.required' => 'A senha do diário é obrigatória.',
         ];
     }
 }

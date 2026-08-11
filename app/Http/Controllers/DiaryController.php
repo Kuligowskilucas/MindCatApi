@@ -18,7 +18,8 @@ class DiaryController extends Controller
     {
         $entry = $this->diaryService->store(
             $request->user(),
-            $request->validated()['content']
+            $request->validated()['content'],
+            $request->validated()['diary_password']
         );
 
         return response()->json([

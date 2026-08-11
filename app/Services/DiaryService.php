@@ -11,8 +11,10 @@ use Illuminate\Support\Facades\Log;
 
 class DiaryService
 {
-    public function store(User $user, string $content): DiaryEntry
+    public function store(User $user, string $content, string $diaryPassword): DiaryEntry
     {
+        $this->verifyDiaryPassword($user, $diaryPassword);
+
         return DiaryEntry::create([
             'user_id' => $user->id,
             'content' => $content,

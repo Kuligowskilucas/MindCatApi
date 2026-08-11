@@ -44,10 +44,11 @@ class DiaryTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function diary_entry_requires_content(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createPatientWithDiaryPassword();
 
         $response = $this->actingAs($user)->postJson('/api/diary', [
-            'content' => '',
+            'content'        => '',
+            'diary_password' => 'Diario123',
         ]);
 
         $response->assertStatus(422);
@@ -56,13 +57,28 @@ class DiaryTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function diary_entry_rejects_content_over_50000_chars(): void
     {
-        $user = User::factory()->create();
+        $user = $this->createPatientWithDiaryPassword();
 
         $response = $this->actingAs($user)->postJson('/api/diary', [
-            'content' => str_repeat('a', 50001),
+            'content'        => str_repeat('a', 50001),
+            'diary_password' => 'Diario123',
         ]);
 
         $response->assertStatus(422);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function store_fails_with_wrong_diary_password(): void
+    {
+        $user = $this->createPatientWithDiaryPassword();
+
+        $response = $this->actingAs($user)->postJson('/api/diary', [
+            'content'        => 'Tentativa',
+            'diary_password' => 'senhaerrada',
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseCount('diary_entries', 0);
     }
 
     // ─── LIST (INDEX) ───
