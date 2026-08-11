@@ -47,11 +47,11 @@ class MoodService
             ->orderByDesc('recorded_at');
 
         if ($from) {
-            $query->where('recorded_at', '>=', $from);
+            $query->where('recorded_at', '>=', Carbon::parse($from)->startOfDay());
         }
 
         if ($to) {
-            $query->where('recorded_at', '<=', $to);
+            $query->where('recorded_at', '<=', Carbon::parse($to)->endOfDay());
         }
 
         return $query->paginate(30);

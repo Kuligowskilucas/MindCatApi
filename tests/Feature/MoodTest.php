@@ -118,6 +118,32 @@ class MoodTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function to_filter_includes_moods_recorded_later_that_day(): void
+    {
+        $user = User::factory()->create();
+
+        $day = Carbon::parse('2026-08-10');
+
+        UserMoodTracking::create([
+            'user_id'     => $user->id,
+            'mood_level'  => 4,
+            'recorded_at' => $day->copy()->setTime(14, 30),
+        ]);
+
+        UserMoodTracking::create([
+            'user_id'     => $user->id,
+            'mood_level'  => 2,
+            'recorded_at' => $day->copy()->addDay()->setTime(9, 0),
+        ]);
+
+        $to = $day->toDateString();
+        $response = $this->actingAs($user)->getJson("/api/moods?to={$to}");
+
+        $response->assertStatus(200);
+        $this->assertCount(1, $response->json('data'));
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_see_other_users_moods(): void
     {
         $user1 = User::factory()->create();
