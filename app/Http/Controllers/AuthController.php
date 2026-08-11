@@ -80,11 +80,6 @@ class AuthController extends Controller
             ->withCookie($this->forgetRefreshCookie());
     }
 
-    public function userProfile(Request $request): JsonResponse
-    {
-        return response()->json($request->user());
-    }
-
     private function respondWithTokens(array $result, string $message, int $status = 200): JsonResponse
     {
         $tokens = $result['tokens'];

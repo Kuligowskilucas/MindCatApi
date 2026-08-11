@@ -19,17 +19,6 @@ class LinkController extends Controller
         return response()->json($patients);
     }
 
-    public function indexProfessionals(Request $request): JsonResponse
-    {
-        if ($request->user()->role !== 'patient') {
-            abort(403);
-        }
-
-        $professionals = $this->linkService->indexProfessionals($request->user());
-
-        return response()->json($professionals);
-    }
-
     public function destroy(Request $request, int $patientId): JsonResponse
     {
         $this->linkService->destroy($request->user(), $patientId);

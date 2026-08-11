@@ -37,13 +37,6 @@ class LinkService
             ->paginate(30);
     }
 
-    public function indexProfessionals(User $patient)
-    {
-        return $patient->professionals()
-            ->select('users.id', 'users.name', 'users.email')
-            ->paginate(30);
-    }
-
     public function destroy(User $pro, int $patientId): void
     {
         ProPatientLink::where('pro_id', $pro->id)

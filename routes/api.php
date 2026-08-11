@@ -45,7 +45,6 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
     Route::put('/profile/two-factor', [ProfileController::class, 'setTwoFactor'])
         ->middleware('throttle:5,1');
 
-    Route::get('/user', [AuthController::class, 'userProfile']);
     Route::put('/user/update', [UserController::class, 'update']);
     Route::delete('/user/delete', [UserController::class, 'destroy']);
 
@@ -62,8 +61,6 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::patch('/tasks/{task}/done', [TaskController::class, 'markDone']);
 
-    Route::get('/my-professionals', [LinkController::class, 'indexProfessionals']);
-
     Route::middleware('role:patient')->group(function () {
         Route::get('/invites', [InviteController::class, 'index']);
         Route::post('/invites', [InviteController::class, 'store'])->middleware('throttle:10,1');
@@ -73,8 +70,6 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
     Route::middleware('role:pro')->group(function () {
         Route::get('/credentials/me', [CredentialController::class, 'me']);
         Route::post('/credentials', [CredentialController::class, 'store'])
-            ->middleware('throttle:10,1');
-        Route::put('/credentials', [CredentialController::class, 'resubmit'])
             ->middleware('throttle:10,1');
     });
 

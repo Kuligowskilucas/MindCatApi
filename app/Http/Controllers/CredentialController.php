@@ -33,17 +33,4 @@ class CredentialController extends Controller
 
         return response()->json($credential, 201);
     }
-
-    /** Reenvio após recusa: rejected → submitted. */
-    public function resubmit(StoreCredentialRequest $request): JsonResponse
-    {
-        $credential = $this->credentialService->submit(
-            $request->user(),
-            $request->validated(),
-            $request->file('crp_document'),
-            $request->file('epsi_document'),
-        );
-
-        return response()->json($credential);
-    }
 }

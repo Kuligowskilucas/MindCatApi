@@ -164,22 +164,4 @@ class AuthTest extends TestCase
     {
         $this->postJson('/api/logout')->assertStatus(401);
     }
-
-    // ─── USER PROFILE ───
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function authenticated_user_can_get_profile(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user)->getJson('/api/user');
-
-        $response->assertStatus(200)
-            ->assertJson(['id' => $user->id, 'email' => $user->email]);
-    }
-
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function unauthenticated_user_cannot_get_profile(): void
-    {
-        $this->getJson('/api/user')->assertStatus(401);
-    }
 }

@@ -78,39 +78,10 @@ class LinkTest extends TestCase
         ]);
     }
 
-    // ─── INDEX PROFESSIONALS (PATIENT) ───
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function patient_can_list_linked_professionals(): void
-    {
-        [$pro, $patient] = $this->createProAndConsentedPatient();
-
-        ProPatientLink::create([
-            'pro_id'     => $pro->id,
-            'patient_id' => $patient->id,
-            'active'     => true,
-        ]);
-
-        $response = $this->actingAs($patient)->getJson('/api/my-professionals');
-
-        $response->assertStatus(200);
-        $this->assertCount(1, $response->json('data'));
-    }
-
-    #[\PHPUnit\Framework\Attributes\Test]
-    public function pro_cannot_access_my_professionals(): void
-    {
-        $pro = User::factory()->pro()->create();
-
-        $response = $this->actingAs($pro)->getJson('/api/my-professionals');
-
-        $response->assertStatus(403);
-    }
-
     #[\PHPUnit\Framework\Attributes\Test]
     public function links_require_authentication(): void
     {
         $this->getJson('/api/patients')->assertStatus(401);
-        $this->getJson('/api/my-professionals')->assertStatus(401);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
