@@ -6,6 +6,7 @@ use App\Http\Requests\Credential\RejectCredentialRequest;
 use App\Models\CredentialDocument;
 use App\Models\ProfessionalCredential;
 use App\Services\AdminCredentialService;
+use App\Services\AuditLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -13,7 +14,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class AdminCredentialController extends Controller
 {
     public function __construct(
-        private AdminCredentialService $service
+        private AdminCredentialService $service,
+        private AuditLogger $audit
     ) {}
 
     /** Fila de análise (default: submitted). Paginada. */
@@ -32,16 +34,33 @@ class AdminCredentialController extends Controller
 
     public function approve(Request $request, ProfessionalCredential $credential): JsonResponse
     {
-        return response()->json(
-            $this->service->approve($credential, $request->user())
+        $result = $this->service->approve($credential, $request->user());
+
+        $this->audit->record(
+            $request->user(),
+            'credential.approved',
+            $result,
+            [],
+            $request->ip()
         );
+
+        return response()->json($result);
     }
 
     public function reject(RejectCredentialRequest $request, ProfessionalCredential $credential): JsonResponse
     {
-        return response()->json(
-            $this->service->reject($credential, $request->user(), $request->validated()['reason'])
+        $reason = $request->validated()['reason'];
+        $result = $this->service->reject($credential, $request->user(), $reason);
+
+        $this->audit->record(
+            $request->user(),
+            'credential.rejected',
+            $result,
+            ['reason' => $reason],
+            $request->ip()
         );
+
+        return response()->json($result);
     }
 
     /**

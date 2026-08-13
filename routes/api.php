@@ -11,6 +11,7 @@ use App\Http\Controllers\TaskController;
 use App\Http\Controllers\PatientController;
 use App\Http\Controllers\CredentialController;
 use App\Http\Controllers\AdminCredentialController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\EmailVerificationController;
@@ -78,6 +79,7 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
         Route::get('/credentials/{credential}', [AdminCredentialController::class, 'show']);
         Route::post('/credentials/{credential}/approve', [AdminCredentialController::class, 'approve']);
         Route::post('/credentials/{credential}/reject', [AdminCredentialController::class, 'reject']);
+        Route::get('/audit-logs', [AuditLogController::class, 'index']);
     });
 
     Route::middleware(['role:pro', 'pro.verified'])->group(function () {
