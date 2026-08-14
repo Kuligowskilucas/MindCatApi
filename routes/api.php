@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DataExportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DiaryController;
 use App\Http\Controllers\MoodController;
@@ -48,6 +49,7 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
 
     Route::put('/user/update', [UserController::class, 'update']);
     Route::delete('/user/delete', [UserController::class, 'destroy']);
+    Route::post('/user/export', [DataExportController::class, 'export'])->middleware('throttle:5,1');
 
     Route::get('/me', [UserController::class, 'me']);
 

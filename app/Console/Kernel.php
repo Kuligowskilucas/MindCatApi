@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('mindcat:review-credentials')->daily();
         $schedule->command('mindcat:remind-credential-review')->daily();
         $schedule->command('mindcat:backup-database')->timezone('America/Sao_Paulo')->dailyAt('03:00');
+        $schedule->command('mindcat:prune-ephemeral')->daily();
     }
 
     /**

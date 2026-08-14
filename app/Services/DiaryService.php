@@ -55,6 +55,29 @@ class DiaryService
         }
     }
 
+    public function entriesForExport(User $user, ?string $diaryPassword): array
+    {
+        $hash = optional($user->profile)->diary_password_hash;
+
+        if (!$hash) {
+            return [];
+        }
+
+        if (!$diaryPassword || !Hash::check($diaryPassword, $hash)) {
+            throw new HttpException(403, 'Senha do diário inválida.');
+        }
+
+        return $user->diaryEntries()
+            ->orderBy('created_at')
+            ->get()
+            ->map(fn (DiaryEntry $entry) => [
+                'id'         => $entry->id,
+                'content'    => $this->safeContent($entry),
+                'created_at' => optional($entry->created_at)->toIso8601String(),
+            ])
+            ->all();
+    }
+
     private function safeContent(DiaryEntry $entry): ?string
     {
         try {
