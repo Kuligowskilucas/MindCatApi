@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Models\User;
+use App\Models\UserConsent;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -21,14 +23,26 @@ class AuthService
         private LoginOtpService $loginOtp
     ) {}
 
-    public function register(array $data): array
+    public function register(array $data, ?string $ip = null): array
     {
-        $user = User::create([
-            'name'     => $data['name'],
-            'email'    => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role'     => $data['role'] ?? 'patient',
-        ]);
+        $user = DB::transaction(function () use ($data, $ip) {
+            $user = User::create([
+                'name'     => $data['name'],
+                'email'    => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role'     => $data['role'] ?? 'patient',
+            ]);
+
+            UserConsent::create([
+                'user_id'     => $user->id,
+                'type'        => 'terms_privacy',
+                'version'     => (string) config('mindcat.legal.version'),
+                'accepted_at' => now(),
+                'ip_address'  => $ip,
+            ]);
+
+            return $user;
+        });
 
         event(new Registered($user));
 

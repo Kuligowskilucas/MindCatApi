@@ -2,6 +2,10 @@
 
 return [
 
+    'legal' => [
+        'version' => env('MINDCAT_LEGAL_VERSION', '1.0'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Criptografia do diário

@@ -20,6 +20,7 @@ class AuthTest extends TestCase
             'email'    => 'paciente@teste.com',
             'password' => 'Senha123',
             'role'     => 'patient',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(201)
@@ -33,6 +34,44 @@ class AuthTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
+    public function register_records_terms_consent(): void
+    {
+        $this->postJson('/api/register', [
+            'name'         => 'Consentido',
+            'email'        => 'consent@teste.com',
+            'password'     => 'Senha123',
+            'accept_terms' => true,
+        ])->assertStatus(201);
+
+        $user = \App\Models\User::where('email', 'consent@teste.com')->first();
+
+        $this->assertDatabaseHas('user_consents', [
+            'user_id' => $user->id,
+            'type'    => 'terms_privacy',
+            'version' => '1.0',
+        ]);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function register_requires_accepting_terms(): void
+    {
+        $this->postJson('/api/register', [
+            'name'     => 'Sem Aceite',
+            'email'    => 'semaceite@teste.com',
+            'password' => 'Senha123',
+        ])->assertStatus(422);
+
+        $this->postJson('/api/register', [
+            'name'         => 'Recusou',
+            'email'        => 'recusou@teste.com',
+            'password'     => 'Senha123',
+            'accept_terms' => false,
+        ])->assertStatus(422);
+
+        $this->assertDatabaseMissing('users', ['email' => 'semaceite@teste.com']);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_as_pro(): void
     {
         $response = $this->postJson('/api/register', [
@@ -40,6 +79,7 @@ class AuthTest extends TestCase
             'email'    => 'pro@teste.com',
             'password' => 'Senha123',
             'role'     => 'pro',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(201)
@@ -53,6 +93,7 @@ class AuthTest extends TestCase
             'name'     => 'Sem Role',
             'email'    => 'semrole@teste.com',
             'password' => 'Senha123',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(201)
@@ -67,6 +108,7 @@ class AuthTest extends TestCase
             'email'    => 'hack@teste.com',
             'password' => 'Senha123',
             'role'     => 'admin',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(422);
@@ -89,6 +131,7 @@ class AuthTest extends TestCase
             'name'     => 'Outro',
             'email'    => 'usado@teste.com',
             'password' => 'Senha123',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(422);
@@ -101,6 +144,7 @@ class AuthTest extends TestCase
             'name'     => 'Teste',
             'email'    => 'teste@teste.com',
             'password' => '123',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(422);

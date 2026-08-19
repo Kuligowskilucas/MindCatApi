@@ -255,6 +255,7 @@ class UserTest extends TestCase
             'name'     => 'Lucas de novo',
             'email'    => 'lucas@teste.com',
             'password' => 'Senha123',
+            'accept_terms' => true,
         ])->assertStatus(201);
     }
 

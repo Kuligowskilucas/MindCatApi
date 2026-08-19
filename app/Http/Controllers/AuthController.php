@@ -20,7 +20,7 @@ class AuthController extends Controller
 
     public function register(RegisterRequest $request): JsonResponse
     {
-        $result = $this->authService->register($request->validated());
+        $result = $this->authService->register($request->validated(), $request->ip());
 
         return response()->json([
             'message' => 'Conta criada. Enviamos um link de confirmação para o seu e-mail.',

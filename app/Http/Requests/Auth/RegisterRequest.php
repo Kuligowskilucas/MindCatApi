@@ -19,6 +19,7 @@ class RegisterRequest extends FormRequest
             'email'    => 'required|string|email|max:255|unique:users',
             'password' => ['required', 'string', new StrongPassword],
             'role'     => 'sometimes|string|in:patient,pro',
+            'accept_terms' => 'required|accepted',
         ];
     }
 
@@ -29,6 +30,8 @@ class RegisterRequest extends FormRequest
             'email.required' => 'O email é obrigatório.',
             'email.email'    => 'Informe um email válido.',
             'email.unique'   => 'Este email já está cadastrado.',
+            'accept_terms.required' => 'É necessário aceitar os Termos de Uso e a Política de Privacidade.',
+            'accept_terms.accepted' => 'É necessário aceitar os Termos de Uso e a Política de Privacidade.',
         ];
     }
 }

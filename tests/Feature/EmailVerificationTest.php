@@ -37,6 +37,7 @@ class EmailVerificationTest extends TestCase
             'name'     => 'Novo Paciente',
             'email'    => 'novo@teste.com',
             'password' => 'Senha123',
+            'accept_terms' => true,
         ]);
 
         $response->assertStatus(201)
@@ -57,6 +58,7 @@ class EmailVerificationTest extends TestCase
             'name'     => 'Novo Paciente',
             'email'    => 'novo@teste.com',
             'password' => 'Senha123',
+            'accept_terms' => true,
         ])->assertStatus(201);
 
         $user = User::where('email', 'novo@teste.com')->first();
