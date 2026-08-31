@@ -2,7 +2,7 @@
 
 REST API for MindCat, a mental health continuity platform that connects patients and psychologists between therapy sessions. The API is the core of the product: the web client and the (currently frozen) mobile client are two consumers of the same backend.
 
-Built with Laravel 13 and Laravel Sanctum. Test suite covers 173 cases running against SQLite in memory.
+Built with Laravel 13 and Laravel Sanctum. Test suite covers 204 cases running against SQLite in memory.
 
 ## What it does
 
@@ -72,11 +72,10 @@ Tests run against SQLite in memory with fixed `APP_KEY` and `MINDCAT_DIARY_KEY` 
 ## Related repositories
 
 - Web client: https://github.com/Kuligowskilucas/MindCatWeb
-- Mobile client (frozen): https://github.com/Kuligowskilucas/MindCatApp
 
 ## Status
 
-In active development. Not yet in production. The web client is the current focus; the mobile client is frozen until the web version ships.
+Live in production at mindcat.com.br, the web client is the current focus;
 
 ## License
 
