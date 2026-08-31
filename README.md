@@ -75,7 +75,7 @@ Tests run against SQLite in memory with fixed `APP_KEY` and `MINDCAT_DIARY_KEY` 
 
 ## Status
 
-Live in production at mindcat.com.br, the web client is the current focus;
+Live in production at mindcat.com.br
 
 ## License
 
