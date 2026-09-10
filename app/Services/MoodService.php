@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Feeling;
 use App\Models\User;
 use App\Models\UserMoodTracking;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class MoodService
@@ -33,17 +35,27 @@ class MoodService
             throw new HttpException(409, 'O humor já foi registrado nesse dia.');
         }
 
-        return UserMoodTracking::create([
-            'user_id'          => $user->id,
-            'mood_level'       => $data['mood_level'],
-            'mood_description' => $data['mood_description'] ?? null,
-            'recorded_at'      => $recordedAt,
-        ]);
+        return DB::transaction(function () use ($user, $data, $recordedAt) {
+            $mood = UserMoodTracking::create([
+                'user_id'          => $user->id,
+                'mood_level'       => $data['mood_level'],
+                'mood_description' => $data['mood_description'] ?? null,
+                'recorded_at'      => $recordedAt,
+            ]);
+
+            if (!empty($data['feelings'])) {
+                $feelingIds = Feeling::whereIn('slug', $data['feelings'])->pluck('id', 'slug');
+                $mood->feelings()->attach($feelingIds->values());
+            }
+
+            return $mood->load('feelings');
+        });
     }
 
     public function index(User $user, ?string $from, ?string $to)
     {
         $query = UserMoodTracking::where('user_id', $user->id)
+            ->with('feelings')
             ->orderByDesc('recorded_at');
 
         if ($from) {

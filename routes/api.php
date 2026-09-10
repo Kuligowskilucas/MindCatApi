@@ -16,6 +16,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\InviteController;
 use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\FeelingController;
 
 
 
@@ -60,6 +61,8 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
     Route::post('/moods', [MoodController::class, 'store']);
     Route::get('/moods',  [MoodController::class, 'index']);
     Route::delete('/moods/{id}', [MoodController::class, 'destroy']);
+
+    Route::get('/feelings', [FeelingController::class, 'index']);
 
     Route::get('/tasks', [TaskController::class, 'index']);
     Route::patch('/tasks/{task}/done', [TaskController::class, 'markDone']);

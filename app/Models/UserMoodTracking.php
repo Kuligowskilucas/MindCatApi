@@ -36,4 +36,9 @@ class UserMoodTracking extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function feelings()
+    {
+        return $this->belongsToMany(Feeling::class, 'mood_feeling', 'mood_id', 'feeling_id');
+    }
 }

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Feeling;
 use App\Models\User;
 use App\Models\UserMoodTracking;
 use Carbon\Carbon;
@@ -73,6 +74,83 @@ class MoodTest extends TestCase
         $user = User::factory()->create();
 
         $this->actingAs($user)->postJson('/api/moods', [])->assertStatus(422);
+    }
+
+    // ─── FEELINGS ───
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function user_can_register_mood_with_feelings_and_they_come_back_in_index(): void
+    {
+        $user = User::factory()->create();
+
+        Feeling::create(['slug' => 'ansioso', 'label' => 'Ansioso', 'sort_order' => 1]);
+        Feeling::create(['slug' => 'calmo', 'label' => 'Calmo', 'sort_order' => 10]);
+
+        $response = $this->actingAs($user)->postJson('/api/moods', [
+            'mood_level' => 3,
+            'feelings'   => ['ansioso', 'calmo'],
+        ]);
+
+        $response->assertStatus(201);
+
+        $this->assertDatabaseHas('user_mood_tracking', [
+            'user_id'    => $user->id,
+            'mood_level' => 3,
+        ]);
+
+        $index = $this->actingAs($user)->getJson('/api/moods');
+        $index->assertStatus(200);
+
+        $slugs = collect($index->json('data.0.feelings'))->pluck('slug')->sort()->values()->all();
+        $this->assertEquals(['ansioso', 'calmo'], $slugs);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function registering_mood_with_unknown_feeling_slug_fails(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/moods', [
+            'mood_level' => 3,
+            'feelings'   => ['nao-existe'],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function registering_mood_with_more_than_five_feelings_fails(): void
+    {
+        $user = User::factory()->create();
+
+        $slugs = [];
+        for ($i = 1; $i <= 6; $i++) {
+            $slug = "sentimento-{$i}";
+            Feeling::create(['slug' => $slug, 'label' => $slug, 'sort_order' => $i]);
+            $slugs[] = $slug;
+        }
+
+        $response = $this->actingAs($user)->postJson('/api/moods', [
+            'mood_level' => 3,
+            'feelings'   => $slugs,
+        ]);
+
+        $response->assertStatus(422);
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function user_can_register_mood_without_feelings(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/moods', [
+            'mood_level' => 4,
+        ]);
+
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('user_mood_tracking', [
+            'user_id'    => $user->id,
+            'mood_level' => 4,
+        ]);
     }
 
     // ─── INDEX ───

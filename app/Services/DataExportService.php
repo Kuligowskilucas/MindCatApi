@@ -33,11 +33,13 @@ class DataExportService
                 'consent_share_with_professional' => $profile->consent_share_with_professional,
             ] : null,
             'moods' => $user->moods()
+                ->with('feelings')
                 ->orderBy('recorded_at')
                 ->get()
                 ->map(fn ($m) => [
                     'mood_level'       => $m->mood_level,
                     'mood_description' => $m->mood_description,
+                    'feelings'         => $m->feelings->pluck('slug')->all(),
                     'recorded_at'      => optional($m->recorded_at)->toIso8601String(),
                 ])
                 ->all(),

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Feeling;
 use App\Models\User;
 use App\Models\UserMoodTracking;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,6 +35,27 @@ class DataExportTest extends TestCase
             ->assertJsonPath('moods.0.mood_level', 4)
             ->assertJsonPath('moods.0.mood_description', 'dia ok')
             ->assertJsonPath('diary.0.content', 'querido diário');
+    }
+
+    public function test_export_includes_mood_feelings(): void
+    {
+        $user = User::factory()->create();
+
+        $ansioso = Feeling::create(['slug' => 'ansioso', 'label' => 'Ansioso', 'sort_order' => 1]);
+        $grato = Feeling::create(['slug' => 'grato', 'label' => 'Grato', 'sort_order' => 12]);
+
+        $mood = UserMoodTracking::create([
+            'user_id'     => $user->id,
+            'mood_level'  => 4,
+            'recorded_at' => now(),
+        ]);
+        $mood->feelings()->attach([$ansioso->id, $grato->id]);
+
+        $response = $this->actingAs($user)->postJson('/api/user/export', []);
+
+        $response->assertStatus(200);
+        $feelings = collect($response->json('moods.0.feelings'))->sort()->values()->all();
+        $this->assertEquals(['ansioso', 'grato'], $feelings);
     }
 
     public function test_export_rejects_wrong_diary_password(): void

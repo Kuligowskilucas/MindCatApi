@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ProfileSeeder::class,
             CredentialSeeder::class,
             LinkSeeder::class,
+            FeelingSeeder::class,
             MoodSeeder::class,
             DiarySeeder::class,
             TaskSeeder::class,
