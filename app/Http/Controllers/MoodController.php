@@ -29,7 +29,8 @@ class MoodController extends Controller
         $moods = $this->moodService->index(
             $request->user(),
             $request->input('from'),
-            $request->input('to')
+            $request->input('to'),
+            (int) $request->input('per_page', 30)
         );
 
         return response()->json($moods);

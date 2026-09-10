@@ -52,7 +52,7 @@ class MoodService
         });
     }
 
-    public function index(User $user, ?string $from, ?string $to)
+    public function index(User $user, ?string $from, ?string $to, int $perPage = 30)
     {
         $query = UserMoodTracking::where('user_id', $user->id)
             ->with('feelings')
@@ -66,7 +66,7 @@ class MoodService
             $query->where('recorded_at', '<=', Carbon::parse($to)->endOfDay());
         }
 
-        return $query->paginate(30);
+        return $query->paginate($perPage);
     }
 
     public function destroy(User $user, int $id): void
