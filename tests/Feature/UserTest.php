@@ -260,21 +260,42 @@ class UserTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function delete_account_keeps_pro_tasks(): void
+    public function delete_account_erases_patient_tasks(): void
     {
         $pro     = User::factory()->pro()->create();
         $patient = User::factory()->patient()->create();
+        $outro   = User::factory()->patient()->create();
 
         $task = Task::create([
             'pro_id'     => $pro->id,
             'patient_id' => $patient->id,
-            'title'      => 'Registro clínico',
+            'title'      => 'Anotar situações de ansiedade',
+            'status'     => 'active',
+        ]);
+
+        $concluida = Task::create([
+            'pro_id'       => $pro->id,
+            'patient_id'   => $patient->id,
+            'title'        => 'Caminhar três vezes na semana',
+            'status'       => 'done',
+            'completed_at' => now(),
+        ]);
+
+        $concluida->delete();
+
+        $deOutroPaciente = Task::create([
+            'pro_id'     => $pro->id,
+            'patient_id' => $outro->id,
+            'title'      => 'Tarefa de outro paciente',
             'status'     => 'active',
         ]);
 
         $this->actingAs($patient)->deleteJson('/api/user/delete')->assertStatus(200);
 
-        // Registro clínico do profissional sobrevive, sem dado pessoal do paciente.
-        $this->assertDatabaseHas('tasks', ['id' => $task->id, 'deleted_at' => null]);
+        // O título é texto clínico escrito sobre a pessoa: sai junto, inclusive
+        // o que já estava na lixeira.
+        $this->assertDatabaseMissing('tasks', ['id' => $task->id]);
+        $this->assertDatabaseMissing('tasks', ['id' => $concluida->id]);
+        $this->assertDatabaseHas('tasks', ['id' => $deOutroPaciente->id, 'deleted_at' => null]);
     }
 }

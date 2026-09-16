@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\DiaryEntry;
 use App\Models\ProfessionalCredential;
 use App\Models\ProPatientLink;
+use App\Models\Task;
 use App\Models\User;
 use App\Models\UserMoodTracking;
 use Illuminate\Support\Facades\DB;
@@ -62,10 +63,11 @@ class UserService
     /**
      * Exclusão de conta.
      *
-     * Conteúdo íntimo (diário, humor) é apagado de verdade — o usuário pediu.
-     * Registro clínico (tarefas) é preservado, mas desvinculado de qualquer
-     * dado pessoal. O usuário é anonimizado; sob a LGPD (art. 12), dado
-     * anonimizado deixa de ser dado pessoal, então a lápide pode permanecer
+     * Diário, humor e tarefas do paciente são apagados de verdade — o usuário
+     * pediu. A tarefa carrega texto clínico escrito sobre a pessoa e segue
+     * presa ao patient_id, então anonimizar o usuário não anonimiza a tarefa.
+     * O usuário é anonimizado e vira lápide soft-deleted; sob a LGPD (art. 12),
+     * dado anonimizado deixa de ser dado pessoal, então a linha pode permanecer
      * para manter a integridade referencial.
      */
     public function destroy(User $user): void
@@ -79,6 +81,10 @@ class UserService
 
             UserMoodTracking::withTrashed()
                 ->where('user_id', $user->id)
+                ->forceDelete();
+
+            Task::withTrashed()
+                ->where('patient_id', $user->id)
                 ->forceDelete();
 
             ProPatientLink::where('patient_id', $user->id)->update(['active' => false]);
