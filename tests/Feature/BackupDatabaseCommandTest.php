@@ -70,19 +70,21 @@ class BackupDatabaseCommandTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function it_prunes_scheduled_backups_older_than_retention(): void
+    public function it_prunes_scheduled_and_pre_deploy_backups_older_than_retention(): void
     {
         Process::fake();
 
-        $old      = $this->makeBackup('scheduled-20200101-030000.sql.gz', 30);
-        $recent   = $this->makeBackup('scheduled-20200102-030000.sql.gz', 1);
-        $preploy  = $this->makeBackup('pre-deploy-20200101-030000.sql.gz', 30);
+        $old            = $this->makeBackup('scheduled-20200101-030000.sql.gz', 30);
+        $recent         = $this->makeBackup('scheduled-20200102-030000.sql.gz', 1);
+        $oldPreDeploy   = $this->makeBackup('pre-deploy-20200101-030000.sql.gz', 30);
+        $freshPreDeploy = $this->makeBackup('pre-deploy-20200102-030000.sql.gz', 1);
 
         $this->artisan('mindcat:backup-database')->assertSuccessful();
 
         $this->assertFileDoesNotExist($old);
+        $this->assertFileDoesNotExist($oldPreDeploy);
         $this->assertFileExists($recent);
-        $this->assertFileExists($preploy);
+        $this->assertFileExists($freshPreDeploy);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

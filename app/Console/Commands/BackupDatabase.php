@@ -12,7 +12,7 @@ class BackupDatabase extends Command
         {--keep-days= : Dias de retenção (sobrescreve config; 0 = não poda nada)}
         {--dry-run : Mostra o dump e a poda que fariam, sem gravar nem apagar}';
 
-    protected $description = 'Faz dump gzipado do MySQL em storage/backups e poda backups agendados além da retenção. Idempotente e re-executável.';
+    protected $description = 'Faz dump gzipado do MySQL em storage/backups e poda os backups além da retenção, agendados e de pre-deploy. Idempotente e re-executável.';
 
     public function handle(): int
     {
@@ -39,7 +39,7 @@ class BackupDatabase extends Command
 
         if ($dryRun) {
             $this->info("[DRY-RUN] Dump de '{$database}' iria para {$path}.");
-            $this->info("[DRY-RUN] Retenção {$keepDays} dia(s): {$pruned} arquivo(s) agendado(s) seriam apagados.");
+            $this->info("[DRY-RUN] Retenção {$keepDays} dia(s): {$pruned} backup(s) seriam apagados.");
 
             return self::SUCCESS;
         }
@@ -85,7 +85,7 @@ class BackupDatabase extends Command
         $size = is_file($path) ? File::size($path) : 0;
 
         $this->info("Backup criado: {$path} (" . number_format($size) . ' bytes).');
-        $this->info("Retenção {$keepDays} dia(s): {$pruned} arquivo(s) antigo(s) apagado(s).");
+        $this->info("Retenção {$keepDays} dia(s): {$pruned} backup(s) antigo(s) apagado(s).");
 
         return self::SUCCESS;
     }
@@ -99,7 +99,12 @@ class BackupDatabase extends Command
         $cutoff = now()->subDays($keepDays)->getTimestamp();
         $count  = 0;
 
-        foreach (glob($dir . DIRECTORY_SEPARATOR . 'scheduled-*.sql.gz') ?: [] as $file) {
+        $files = array_merge(
+            glob($dir . DIRECTORY_SEPARATOR . 'scheduled-*.sql.gz') ?: [],
+            glob($dir . DIRECTORY_SEPARATOR . 'pre-deploy-*.sql.gz') ?: [],
+        );
+
+        foreach ($files as $file) {
             if (filemtime($file) < $cutoff) {
                 $count++;
 
