@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\ProPatientLink;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -10,8 +11,8 @@ class LinkSeeder extends Seeder
 {
     public function run(): void
     {
-        $pros = User::where('role', 'pro')->get();
-        $patients = User::where('role', 'patient')
+        $pros = User::where('role', Role::Pro)->get();
+        $patients = User::where('role', Role::Patient)
             ->whereHas('profile', fn ($q) => $q->where('consent_share_with_professional', true))
             ->get();
 

@@ -22,13 +22,15 @@ class UserTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function me_returns_user_with_profile(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'pro']);
         UserProfile::factory()->create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)->getJson('/api/me');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['id', 'name', 'email', 'role', 'profile']);
+            ->assertJsonStructure(['id', 'name', 'email', 'role', 'profile'])
+            ->assertJson(['role' => 'pro']);
+        $this->assertIsString($response->json('role'));
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

@@ -12,7 +12,7 @@ class LinkService
     {
         $patient = User::findOrFail($patientId);
 
-        if ($patient->role !== 'patient') {
+        if (!$patient->isPatient()) {
             throw new HttpException(422, 'Usuário não é paciente.');
         }
 

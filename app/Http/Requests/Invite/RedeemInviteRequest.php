@@ -8,7 +8,7 @@ class RedeemInviteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->role === 'pro';
+        return $this->user()->isPro();
     }
 
     protected function prepareForValidation(): void

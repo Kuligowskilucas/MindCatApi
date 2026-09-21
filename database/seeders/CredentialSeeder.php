@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\ProfessionalCredential;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -12,7 +13,7 @@ class CredentialSeeder extends Seeder
     {
         // Marca os profissionais de teste como APROVADOS, para que o gate
         // `pro-verified` (Fase 5b) não trave os logins de smoke test.
-        $pros = User::where('role', 'pro')->get();
+        $pros = User::where('role', Role::Pro)->get();
 
         foreach ($pros as $index => $pro) {
             ProfessionalCredential::firstOrCreate(

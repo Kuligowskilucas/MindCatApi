@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\DiaryEntry;
 use App\Models\User;
 use Carbon\Carbon;
@@ -12,7 +13,7 @@ class DiarySeeder extends Seeder
     public function run(): void
     {
         // Só pacientes que têm senha de diário (primeiros 3)
-        $patients = User::where('role', 'patient')
+        $patients = User::where('role', Role::Patient)
             ->whereHas('profile', fn ($q) => $q->whereNotNull('diary_password_hash'))
             ->get();
 

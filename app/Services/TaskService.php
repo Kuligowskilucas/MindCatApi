@@ -27,7 +27,7 @@ class TaskService
 
     public function index(User $user, string $scope)
     {
-        if ($user->role === 'pro' && $scope === 'assigned') {
+        if ($user->isPro() && $scope === 'assigned') {
             return Task::where('pro_id', $user->id)
                 ->whereIn('patient_id', function ($q) use ($user) {
                     $q->select('patient_id')

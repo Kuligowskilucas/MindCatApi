@@ -16,7 +16,7 @@ class ShareUserContext
         if ($user) {
             Log::shareContext([
                 'user_id' => $user->id,
-                'role'    => $user->role,
+                'role'    => $user->getRawOriginal('role'),
             ]);
         }
 

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\Role;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -37,9 +38,25 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at'  => 'datetime',
         'password'           => 'hashed',
         'two_factor_enabled' => 'boolean',
+        'role'               => Role::class,
     ];
 
-    public function profile(){ 
+    public function isPatient(): bool
+    {
+        return $this->role === Role::Patient;
+    }
+
+    public function isPro(): bool
+    {
+        return $this->role === Role::Pro;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === Role::Admin;
+    }
+
+    public function profile(){
         return $this->hasOne(UserProfile::class); 
     }
 

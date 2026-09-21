@@ -8,7 +8,7 @@ class StoreCredentialRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->role === 'pro';
+        return $this->user()->isPro();
     }
 
     public function rules(): array

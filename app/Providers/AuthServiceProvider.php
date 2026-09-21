@@ -25,7 +25,7 @@ class AuthServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('view-patient', function (User $pro, User $patient){
-            if($pro->role !== 'pro' || $patient->role !== 'patient'){
+            if(!$pro->isPro() || !$patient->isPatient()){
                 return false;
             }
         

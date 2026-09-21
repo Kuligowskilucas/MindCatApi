@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\Role;
 use App\Models\CredentialDocument;
 use App\Models\PatientInvite;
 use App\Models\ProfessionalCredential;
@@ -18,7 +19,8 @@ class CredentialFoundationTest extends TestCase
         // Confirma que a coluna role virou string e aceita 'admin'.
         $admin = User::factory()->create(['role' => 'admin']);
 
-        $this->assertSame('admin', $admin->fresh()->role);
+        $this->assertSame(Role::Admin, $admin->fresh()->role);
+        $this->assertSame('admin', $admin->fresh()->role->value);
     }
 
     public function test_pro_has_one_credential_and_approval_helper(): void

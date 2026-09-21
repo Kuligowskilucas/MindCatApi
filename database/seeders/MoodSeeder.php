@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\User;
 use App\Models\UserMoodTracking;
 use Carbon\Carbon;
@@ -11,7 +12,7 @@ class MoodSeeder extends Seeder
 {
     public function run(): void
     {
-        $patients = User::where('role', 'patient')->take(5)->get();
+        $patients = User::where('role', Role::Patient)->take(5)->get();
 
         $descriptions = [
             1 => ['Dia horrível', 'Muito irritado', 'Não aguento mais'],

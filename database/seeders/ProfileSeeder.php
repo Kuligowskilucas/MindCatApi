@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\Role;
 use App\Models\User;
 use App\Models\UserProfile;
 use Illuminate\Database\Seeder;
@@ -11,7 +12,7 @@ class ProfileSeeder extends Seeder
 {
     public function run(): void
     {
-        $patients = User::where('role', 'patient')->get();
+        $patients = User::where('role', Role::Patient)->get();
 
         foreach ($patients as $index => $patient) {
             $profile = UserProfile::firstOrCreate(
@@ -30,7 +31,7 @@ class ProfileSeeder extends Seeder
                 $profile->save();
             }
         }
-        $pros = User::where('role', 'pro')->get();
+        $pros = User::where('role', Role::Pro)->get();
         foreach ($pros as $pro) {
             UserProfile::firstOrCreate(
                 ['user_id' => $pro->id],
