@@ -37,32 +37,61 @@ class DemoMoodSeeder extends Seeder
     private const FEELINGS_MID  = ['cansado', 'calmo'];
     private const FEELINGS_LOW  = ['ansioso', 'triste', 'cansado', 'irritado'];
 
-    private const NOTES = [
+    private const THOUGHTS = [
         5 => [
-            'Hoje foi um dia incrível, não parei de sorrir.',
-            'Me sinto radiante, as coisas estão dando certo.',
-            'Dia ótimo, aproveitei cada momento com quem eu gosto.',
-            'Acordei bem e o dia inteiro foi leve assim.',
+            'Eu mereço esse dia bom, trabalhei pra ele.',
+            'As coisas estão dando certo e eu tenho parte nisso.',
+            'Tenho gente boa por perto e sei disso hoje.',
+            'Acordei leve e consegui manter o dia assim.',
         ],
         4 => [
-            'Hoje foi um bom dia, me senti animado.',
-            'Dia tranquilo e produtivo, estou satisfeito.',
-            'Consegui fazer o que planejei, isso ajudou meu humor.',
-            'Me senti bem o dia todo, sem grandes sustos.',
+            'Deu certo porque eu me organizei.',
+            'Estou dando conta do que planejei.',
+            'Consigo lidar com o que aparecer hoje.',
+            'O dia foi tranquilo e isso já é bom.',
         ],
         3 => [
-            'Dia mediano, nada de especial pra contar.',
-            'Estou um pouco cansado, mas de boa.',
-            'Um dia comum, levei numa boa.',
+            'Hoje é só mais um dia comum.',
+            'Estou cansado, mas nada demais.',
+            'Melhor não criar expectativa pro resto da semana.',
         ],
         2 => [
-            'Não foi um bom dia, me senti pra baixo.',
-            'Estou ansioso com algumas coisas dessa semana.',
-            'Dia mais difícil, mas amanhã eu tento de novo.',
+            'Devia estar lidando melhor com isso.',
+            'Acho que vou estragar o que vem pela frente.',
+            'Ninguém percebe o quanto eu tento.',
         ],
         1 => [
-            'Hoje foi um dia bem complicado emocionalmente.',
-            'Me senti muito mal, preciso conversar sobre isso na sessão.',
+            'Não vou dar conta disso sozinho.',
+            'Nada do que eu faço muda alguma coisa.',
+        ],
+    ];
+
+    private const BEHAVIORS = [
+        5 => [
+            'Saí com quem eu gosto e aproveitei o dia inteiro.',
+            'Treinei de manhã e ainda sobrou energia.',
+            'Cozinhei algo bom e chamei gente pra jantar.',
+            'Fiz o que tinha planejado e ainda descansei.',
+        ],
+        4 => [
+            'Fiz a caminhada que tinha combinado comigo.',
+            'Adiantei as tarefas da semana sem me cobrar demais.',
+            'Liguei pra uma amiga e conversei um tempo.',
+            'Trabalhei e consegui parar no horário.',
+        ],
+        3 => [
+            'Cumpri a rotina sem muito ânimo.',
+            'Trabalhei e voltei direto pra casa.',
+            'Passei a noite no celular sem fazer nada.',
+        ],
+        2 => [
+            'Adiei o que precisava fazer.',
+            'Evitei responder as mensagens do dia.',
+            'Comi mal e dormi fora de hora.',
+        ],
+        1 => [
+            'Fiquei deitado a maior parte do dia.',
+            'Cancelei os compromissos e não falei com ninguém.',
         ],
     ];
 
@@ -113,12 +142,11 @@ class DemoMoodSeeder extends Seeder
                 );
 
                 $mood = UserMoodTracking::create([
-                    'user_id'          => $patient->id,
-                    'mood_level'       => $level,
-                    'mood_description' => $faker->boolean(60)
-                        ? $faker->randomElement(self::NOTES[$level])
-                        : null,
-                    'recorded_at'      => $recordedAt,
+                    'user_id'     => $patient->id,
+                    'mood_level'  => $level,
+                    'thought'     => $faker->randomElement(self::THOUGHTS[$level]),
+                    'behavior'    => $faker->randomElement(self::BEHAVIORS[$level]),
+                    'recorded_at' => $recordedAt,
                 ]);
 
                 $feelingIds = Feeling::whereIn('slug', $this->feelingsForLevel($level, $faker))

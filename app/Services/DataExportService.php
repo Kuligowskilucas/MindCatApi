@@ -37,10 +37,11 @@ class DataExportService
                 ->orderBy('recorded_at')
                 ->get()
                 ->map(fn ($m) => [
-                    'mood_level'       => $m->mood_level,
-                    'mood_description' => $m->mood_description,
-                    'feelings'         => $m->feelings->pluck('slug')->all(),
-                    'recorded_at'      => optional($m->recorded_at)->toIso8601String(),
+                    'mood_level'  => $m->mood_level,
+                    'thought'     => $m->thought,
+                    'behavior'    => $m->behavior,
+                    'feelings'    => $m->feelings->pluck('slug')->all(),
+                    'recorded_at' => optional($m->recorded_at)->toIso8601String(),
                 ])
                 ->all(),
             'tasks' => Task::where('patient_id', $user->id)

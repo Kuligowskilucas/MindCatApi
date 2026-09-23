@@ -43,6 +43,8 @@ class PatientTest extends TestCase
         UserMoodTracking::create([
             'user_id'     => $patient->id,
             'mood_level'  => 4,
+            'thought'     => 'Consegui dar conta da semana.',
+            'behavior'    => 'Fiz o exercício que a psicóloga passou.',
             'recorded_at' => now(),
         ]);
 
@@ -66,9 +68,13 @@ class PatientTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'patient' => ['id', 'name'],
-                'moods',
+                'moods'   => [['id', 'mood_level', 'thought', 'behavior', 'recorded_at']],
+                'feelings_frequency',
+                'range_days',
                 'exercises_completed',
             ])
+            ->assertJsonPath('moods.0.thought', 'Consegui dar conta da semana.')
+            ->assertJsonPath('moods.0.behavior', 'Fiz o exercício que a psicóloga passou.')
             ->assertJsonPath('exercises_completed', 1);
     }
 

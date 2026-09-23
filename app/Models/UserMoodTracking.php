@@ -23,7 +23,8 @@ class UserMoodTracking extends Model
     protected $fillable = [
         'user_id',
         'mood_level',        // int 1..5
-        'mood_description',  // string/null
+        'thought',           // text/null
+        'behavior',          // text/null
         'recorded_at',       // datetime
     ];
 

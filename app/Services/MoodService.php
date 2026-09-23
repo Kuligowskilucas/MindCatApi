@@ -25,22 +25,13 @@ class MoodService
             throw new HttpException(422, 'Só é possível registrar humor dos últimos 7 dias.');
         }
 
-        $day = $recordedAt->copy()->startOfDay();
-
-        $exists = UserMoodTracking::where('user_id', $user->id)
-            ->whereBetween('recorded_at', [$day, $day->copy()->endOfDay()])
-            ->exists();
-
-        if ($exists) {
-            throw new HttpException(409, 'O humor já foi registrado nesse dia.');
-        }
-
         return DB::transaction(function () use ($user, $data, $recordedAt) {
             $mood = UserMoodTracking::create([
-                'user_id'          => $user->id,
-                'mood_level'       => $data['mood_level'],
-                'mood_description' => $data['mood_description'] ?? null,
-                'recorded_at'      => $recordedAt,
+                'user_id'     => $user->id,
+                'mood_level'  => $data['mood_level'],
+                'thought'     => $data['thought'],
+                'behavior'    => $data['behavior'],
+                'recorded_at' => $recordedAt,
             ]);
 
             if (!empty($data['feelings'])) {

@@ -18,10 +18,11 @@ class DataExportTest extends TestCase
         $this->giveDiaryPassword($user);
 
         UserMoodTracking::create([
-            'user_id'          => $user->id,
-            'mood_level'       => 4,
-            'mood_description' => 'dia ok',
-            'recorded_at'      => now(),
+            'user_id'     => $user->id,
+            'mood_level'  => 4,
+            'thought'     => 'O dia vai ser tranquilo.',
+            'behavior'    => 'Fui trabalhar e caminhei à noite.',
+            'recorded_at' => now(),
         ]);
 
         $user->diaryEntries()->create(['content' => 'querido diário']);
@@ -33,7 +34,8 @@ class DataExportTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonPath('user.email', $user->email)
             ->assertJsonPath('moods.0.mood_level', 4)
-            ->assertJsonPath('moods.0.mood_description', 'dia ok')
+            ->assertJsonPath('moods.0.thought', 'O dia vai ser tranquilo.')
+            ->assertJsonPath('moods.0.behavior', 'Fui trabalhar e caminhei à noite.')
             ->assertJsonPath('diary.0.content', 'querido diário');
     }
 

@@ -13,49 +13,117 @@ class MoodTest extends TestCase
 {
     use RefreshDatabase;
 
+    private function seedFeelings(): void
+    {
+        Feeling::firstOrCreate(['slug' => 'ansioso'], ['label' => 'Ansioso', 'sort_order' => 1]);
+        Feeling::firstOrCreate(['slug' => 'calmo'], ['label' => 'Calmo', 'sort_order' => 10]);
+    }
+
+    private function payload(array $overrides = []): array
+    {
+        $this->seedFeelings();
+
+        return array_merge([
+            'mood_level' => 4,
+            'thought'    => 'Achei que não ia dar conta da reunião.',
+            'behavior'   => 'Respirei fundo e falei mesmo assim.',
+            'feelings'   => ['ansioso'],
+        ], $overrides);
+    }
+
     // ─── STORE ───
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_mood(): void
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/moods', [
-            'mood_level' => 4,
-        ]);
+        $response = $this->actingAs($user)->postJson('/api/moods', $this->payload());
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('user_mood_tracking', [
             'user_id'    => $user->id,
             'mood_level' => 4,
+            'thought'    => 'Achei que não ia dar conta da reunião.',
+            'behavior'   => 'Respirei fundo e falei mesmo assim.',
         ]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function user_can_register_mood_with_description(): void
+    public function register_returns_thought_and_behavior(): void
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/moods', [
-            'mood_level'       => 5,
-            'mood_description' => 'Dia incrível!',
-        ]);
+        $response = $this->actingAs($user)->postJson('/api/moods', $this->payload([
+            'mood_level' => 5,
+            'thought'    => 'Hoje eu mereço comemorar.',
+            'behavior'   => 'Saí com os amigos depois do trabalho.',
+        ]));
 
         $response->assertStatus(201)
-            ->assertJson(['mood_description' => 'Dia incrível!']);
+            ->assertJson([
+                'thought'  => 'Hoje eu mereço comemorar.',
+                'behavior' => 'Saí com os amigos depois do trabalho.',
+            ]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function user_cannot_register_mood_twice_same_day(): void
+    public function user_can_register_mood_twice_same_day(): void
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->postJson('/api/moods', ['mood_level' => 3]);
+        $this->actingAs($user)->postJson('/api/moods', $this->payload([
+            'mood_level' => 3,
+            'thought'    => 'A manhã vai ser pesada.',
+            'behavior'   => 'Adiei a primeira tarefa.',
+        ]))->assertStatus(201);
 
-        $response = $this->actingAs($user)->postJson('/api/moods', [
+        $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 5,
-        ]);
+            'thought'    => 'No fim deu tudo certo.',
+            'behavior'   => 'Terminei tudo e fui caminhar.',
+        ]))->assertStatus(201);
 
-        $response->assertStatus(409);
+        $this->assertSame(2, UserMoodTracking::where('user_id', $user->id)->count());
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function thought_is_required(): void
+    {
+        $user = User::factory()->create();
+
+        $payload = $this->payload();
+        unset($payload['thought']);
+
+        $this->actingAs($user)->postJson('/api/moods', $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('thought');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function behavior_is_required(): void
+    {
+        $user = User::factory()->create();
+
+        $payload = $this->payload();
+        unset($payload['behavior']);
+
+        $this->actingAs($user)->postJson('/api/moods', $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('behavior');
+    }
+
+    #[\PHPUnit\Framework\Attributes\Test]
+    public function thought_and_behavior_are_limited_to_1000_characters(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->postJson('/api/moods', $this->payload([
+            'thought' => str_repeat('a', 1001),
+        ]))->assertStatus(422)->assertJsonValidationErrors('thought');
+
+        $this->actingAs($user)->postJson('/api/moods', $this->payload([
+            'behavior' => str_repeat('a', 1001),
+        ]))->assertStatus(422)->assertJsonValidationErrors('behavior');
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -63,9 +131,9 @@ class MoodTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->postJson('/api/moods', ['mood_level' => 0])->assertStatus(422);
-        $this->actingAs($user)->postJson('/api/moods', ['mood_level' => 6])->assertStatus(422);
-        $this->actingAs($user)->postJson('/api/moods', ['mood_level' => -1])->assertStatus(422);
+        $this->actingAs($user)->postJson('/api/moods', $this->payload(['mood_level' => 0]))->assertStatus(422);
+        $this->actingAs($user)->postJson('/api/moods', $this->payload(['mood_level' => 6]))->assertStatus(422);
+        $this->actingAs($user)->postJson('/api/moods', $this->payload(['mood_level' => -1]))->assertStatus(422);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
@@ -73,7 +141,12 @@ class MoodTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->actingAs($user)->postJson('/api/moods', [])->assertStatus(422);
+        $payload = $this->payload();
+        unset($payload['mood_level']);
+
+        $this->actingAs($user)->postJson('/api/moods', $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('mood_level');
     }
 
     // ─── FEELINGS ───
@@ -82,13 +155,10 @@ class MoodTest extends TestCase
     {
         $user = User::factory()->create();
 
-        Feeling::create(['slug' => 'ansioso', 'label' => 'Ansioso', 'sort_order' => 1]);
-        Feeling::create(['slug' => 'calmo', 'label' => 'Calmo', 'sort_order' => 10]);
-
-        $response = $this->actingAs($user)->postJson('/api/moods', [
+        $response = $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 3,
             'feelings'   => ['ansioso', 'calmo'],
-        ]);
+        ]));
 
         $response->assertStatus(201);
 
@@ -109,10 +179,10 @@ class MoodTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/moods', [
+        $response = $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 3,
             'feelings'   => ['nao-existe'],
-        ]);
+        ]));
 
         $response->assertStatus(422);
     }
@@ -129,28 +199,29 @@ class MoodTest extends TestCase
             $slugs[] = $slug;
         }
 
-        $response = $this->actingAs($user)->postJson('/api/moods', [
+        $response = $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 3,
             'feelings'   => $slugs,
-        ]);
+        ]));
 
         $response->assertStatus(422);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function user_can_register_mood_without_feelings(): void
+    public function registering_mood_without_feelings_fails(): void
     {
         $user = User::factory()->create();
 
-        $response = $this->actingAs($user)->postJson('/api/moods', [
-            'mood_level' => 4,
-        ]);
+        $payload = $this->payload();
+        unset($payload['feelings']);
 
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('user_mood_tracking', [
-            'user_id'    => $user->id,
-            'mood_level' => 4,
-        ]);
+        $this->actingAs($user)->postJson('/api/moods', $payload)
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('feelings');
+
+        $this->actingAs($user)->postJson('/api/moods', $this->payload(['feelings' => []]))
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('feelings');
     }
 
     // ─── INDEX ───
@@ -162,13 +233,17 @@ class MoodTest extends TestCase
         UserMoodTracking::create([
             'user_id'     => $user->id,
             'mood_level'  => 3,
+            'thought'     => 'Ninguém vai notar meu esforço.',
+            'behavior'    => 'Terminei o relatório mesmo assim.',
             'recorded_at' => now(),
         ]);
 
         $response = $this->actingAs($user)->getJson('/api/moods');
 
         $response->assertStatus(200)
-            ->assertJsonStructure(['data']);
+            ->assertJsonStructure(['data'])
+            ->assertJsonPath('data.0.thought', 'Ninguém vai notar meu esforço.')
+            ->assertJsonPath('data.0.behavior', 'Terminei o relatório mesmo assim.');
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
