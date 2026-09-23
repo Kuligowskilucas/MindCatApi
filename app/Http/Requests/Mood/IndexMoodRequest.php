@@ -16,7 +16,7 @@ class IndexMoodRequest extends FormRequest
         return [
             'from'     => 'nullable|date',
             'to'       => 'nullable|date|after_or_equal:from',
-            'per_page' => 'nullable|integer|min:1|max:100',
+            'per_page' => 'nullable|integer|min:1|max:500',
         ];
     }
 }
