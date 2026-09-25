@@ -10,6 +10,7 @@ class CredentialDocument extends Model
     use HasFactory;
 
     public const KIND_CRP_CARD   = 'crp_card';
+    public const KIND_CRM_CARD   = 'crm_card';
     public const KIND_EPSI_PROOF = 'epsi_proof';
     public const KIND_DIPLOMA    = 'diploma';
     public const KIND_OTHER      = 'other';

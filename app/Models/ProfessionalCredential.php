@@ -34,10 +34,34 @@ class ProfessionalCredential extends Model
     public const METHOD_OCR_ASSISTED = 'ocr_assisted';
     public const METHOD_API          = 'api';
 
+    public const PROFESSION_PSYCHOLOGIST = 'psychologist';
+    public const PROFESSION_PSYCHIATRIST = 'psychiatrist';
+
+    public const PROFESSIONS = [
+        self::PROFESSION_PSYCHOLOGIST,
+        self::PROFESSION_PSYCHIATRIST,
+    ];
+
+    public const COUNCIL_CRP = 'CRP';
+    public const COUNCIL_CRM = 'CRM';
+
+    public const COUNCILS = [
+        self::COUNCIL_CRP,
+        self::COUNCIL_CRM,
+    ];
+
+    public const COUNCIL_BY_PROFESSION = [
+        self::PROFESSION_PSYCHOLOGIST => self::COUNCIL_CRP,
+        self::PROFESSION_PSYCHIATRIST => self::COUNCIL_CRM,
+    ];
+
     protected $fillable = [
         'user_id',
-        'crp_number',
-        'crp_region',
+        'profession',
+        'council',
+        'registration_number',
+        'registration_region',
+        'rqe_number',
         'epsi_registered',
         'status',
         'rejection_reason',
@@ -83,4 +107,5 @@ class ProfessionalCredential extends Model
     {
         return $this->status === self::STATUS_APPROVED;
     }
+
 }

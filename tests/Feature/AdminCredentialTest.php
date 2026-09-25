@@ -21,12 +21,14 @@ class AdminCredentialTest extends TestCase
         $pro = User::factory()->unverifiedPro()->create();
 
         return ProfessionalCredential::create([
-            'user_id'         => $pro->id,
-            'crp_number'      => '06/123456',
-            'crp_region'      => '06',
-            'epsi_registered' => true,
-            'status'          => ProfessionalCredential::STATUS_SUBMITTED,
-            'submitted_at'    => now(),
+            'user_id'             => $pro->id,
+            'profession'          => ProfessionalCredential::PROFESSION_PSYCHOLOGIST,
+            'council'             => ProfessionalCredential::COUNCIL_CRP,
+            'registration_number' => '06/123456',
+            'registration_region' => '06',
+            'epsi_registered'     => true,
+            'status'              => ProfessionalCredential::STATUS_SUBMITTED,
+            'submitted_at'        => now(),
         ]);
     }
 
@@ -128,7 +130,7 @@ class AdminCredentialTest extends TestCase
             ->getJson("/api/admin/credentials/{$credential->id}")
             ->assertStatus(200)
             ->assertJsonStructure([
-                'credential' => ['id', 'status', 'crp_number'],
+                'credential' => ['id', 'status', 'profession', 'council', 'registration_number', 'registration_region', 'rqe_number'],
                 'documents'  => [['id', 'kind', 'original_name', 'url']],
             ]);
 

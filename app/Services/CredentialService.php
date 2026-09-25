@@ -29,7 +29,7 @@ class CredentialService
      * em disco privado e move o status para 'submitted'. Só é permitido a
      * partir de 'pending' ou 'rejected' — nunca em análise ou já aprovado.
      */
-    public function submit( User $pro, array $data, UploadedFile $crpDocument, UploadedFile $epsiDocument ): ProfessionalCredential {
+    public function submit( User $pro, array $data, UploadedFile $registrationDocument, ?UploadedFile $epsiDocument ): ProfessionalCredential {
         $credential = $this->forUser($pro);
 
         $blocked = [
@@ -41,14 +41,17 @@ class CredentialService
             throw new HttpException(409, 'Sua credencial já está em análise ou aprovada.');
         }
 
-        return DB::transaction(function () use ($credential, $pro, $data, $crpDocument, $epsiDocument) {
+        return DB::transaction(function () use ($credential, $pro, $data, $registrationDocument, $epsiDocument) {
             $credential->fill([
-                'crp_number'       => $data['crp_number'],
-                'crp_region'       => $data['crp_region'] ?? null,
-                'epsi_registered'  => (bool) $data['epsi_registered'],
-                'status'           => ProfessionalCredential::STATUS_SUBMITTED,
-                'rejection_reason' => null,
-                'submitted_at'     => now(),
+                'profession'          => $data['profession'],
+                'council'             => $data['council'],
+                'registration_number' => $data['registration_number'],
+                'registration_region' => $data['registration_region'],
+                'rqe_number'          => $data['rqe_number'] ?? null,
+                'epsi_registered'     => (bool) ($data['epsi_registered'] ?? false),
+                'status'              => ProfessionalCredential::STATUS_SUBMITTED,
+                'rejection_reason'    => null,
+                'submitted_at'        => now(),
             ]);
             $credential->save();
 
@@ -57,8 +60,15 @@ class CredentialService
                 $old->delete();
             }
 
-            $this->storeDocument($credential, $pro, $crpDocument, CredentialDocument::KIND_CRP_CARD);
-            $this->storeDocument($credential, $pro, $epsiDocument, CredentialDocument::KIND_EPSI_PROOF);
+            $registrationKind = $data['council'] === ProfessionalCredential::COUNCIL_CRM
+                ? CredentialDocument::KIND_CRM_CARD
+                : CredentialDocument::KIND_CRP_CARD;
+
+            $this->storeDocument($credential, $pro, $registrationDocument, $registrationKind);
+
+            if ($epsiDocument) {
+                $this->storeDocument($credential, $pro, $epsiDocument, CredentialDocument::KIND_EPSI_PROOF);
+            }
 
             return $credential->load('documents');
         });

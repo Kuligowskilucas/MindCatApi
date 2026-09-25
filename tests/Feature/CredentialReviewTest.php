@@ -152,11 +152,12 @@ class CredentialReviewTest extends TestCase
         $pro->credential->update(['status' => ProfessionalCredential::STATUS_EXPIRED]);
 
         $this->actingAs($pro)->postJson('/api/credentials', [
-            'crp_number'      => '06/123456',
-            'crp_region'      => '06',
-            'epsi_registered' => true,
-            'crp_document'    => UploadedFile::fake()->create('crp.pdf', 100, 'application/pdf'),
-            'epsi_document'   => UploadedFile::fake()->create('epsi.pdf', 100, 'application/pdf'),
+            'profession'            => ProfessionalCredential::PROFESSION_PSYCHOLOGIST,
+            'registration_number'   => '06/123456',
+            'registration_region'   => '06',
+            'epsi_registered'       => true,
+            'registration_document' => UploadedFile::fake()->create('crp.pdf', 100, 'application/pdf'),
+            'epsi_document'         => UploadedFile::fake()->create('epsi.pdf', 100, 'application/pdf'),
         ])->assertStatus(201)
           ->assertJsonPath('status', ProfessionalCredential::STATUS_SUBMITTED);
     }

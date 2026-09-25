@@ -19,8 +19,10 @@ class CredentialSeeder extends Seeder
             ProfessionalCredential::firstOrCreate(
                 ['user_id' => $pro->id],
                 [
-                    'crp_number'          => sprintf('06/%06d', 100000 + $index),
-                    'crp_region'          => '06',
+                    'profession'          => ProfessionalCredential::PROFESSION_PSYCHOLOGIST,
+                    'council'             => ProfessionalCredential::COUNCIL_CRP,
+                    'registration_number' => sprintf('06/%06d', 100000 + $index),
+                    'registration_region' => '06',
                     'epsi_registered'     => true,
                     'status'              => ProfessionalCredential::STATUS_APPROVED,
                     'verification_method' => ProfessionalCredential::METHOD_MANUAL,
