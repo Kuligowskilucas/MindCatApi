@@ -55,4 +55,56 @@ class CredentialRegionMigrationTest extends TestCase
         ])->assertStatus(201)
           ->assertJsonPath('registration_region', '06');
     }
+
+    public function test_approved_legacy_credential_without_crp_number_migrates_without_profession(): void
+    {
+        $pro = User::factory()->unverifiedPro()->create();
+
+        $migration = $this->migration();
+        $migration->down();
+
+        DB::table('professional_credentials')->insert([
+            'user_id'         => $pro->id,
+            'crp_number'      => null,
+            'crp_region'      => '06',
+            'epsi_registered' => false,
+            'status'          => ProfessionalCredential::STATUS_APPROVED,
+            'created_at'      => now(),
+            'updated_at'      => now(),
+        ]);
+
+        $migration->up();
+
+        $migrated = ProfessionalCredential::where('user_id', $pro->id)->first();
+        $this->assertNull($migrated->profession);
+        $this->assertNull($migrated->council);
+        $this->assertNull($migrated->registration_number);
+        $this->assertSame('06', $migrated->registration_region);
+
+        $this->assertTrue($migrated->isActive());
+        $this->assertSame(['verified' => false, 'label' => 'Profissional'], $migrated->publicBadge());
+    }
+
+    public function test_rollback_restores_region_of_legacy_credential_without_profession(): void
+    {
+        $pro = User::factory()->unverifiedPro()->create();
+
+        $migration = $this->migration();
+        $migration->down();
+
+        DB::table('professional_credentials')->insert([
+            'user_id'    => $pro->id,
+            'crp_region' => '06',
+            'status'     => ProfessionalCredential::STATUS_PENDING,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        $migration->up();
+        $migration->down();
+
+        $this->assertSame('06', DB::table('professional_credentials')->where('user_id', $pro->id)->value('crp_region'));
+
+        $migration->up();
+    }
 }

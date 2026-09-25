@@ -18,11 +18,16 @@ return new class extends Migration
         });
 
         DB::table('professional_credentials')->update([
-            'profession'          => 'psychologist',
-            'council'             => 'CRP',
             'registration_number' => DB::raw('crp_number'),
             'registration_region' => DB::raw('crp_region'),
         ]);
+
+        DB::table('professional_credentials')
+            ->whereNotNull('crp_number')
+            ->update([
+                'profession' => 'psychologist',
+                'council'    => 'CRP',
+            ]);
 
         Schema::table('professional_credentials', function (Blueprint $table) {
             $table->dropColumn(['crp_number', 'crp_region']);
@@ -37,7 +42,7 @@ return new class extends Migration
         });
 
         DB::table('professional_credentials')
-            ->where('council', 'CRP')
+            ->where(fn ($q) => $q->where('council', 'CRP')->orWhereNull('council'))
             ->update([
                 'crp_number' => DB::raw('registration_number'),
                 'crp_region' => DB::raw('registration_region'),

@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditLog;
 use App\Models\CredentialDocument;
 use App\Models\ProfessionalCredential;
 use App\Models\User;
@@ -93,6 +94,36 @@ class AdminCredentialTest extends TestCase
             ->assertJsonPath('rejection_reason', 'Documento ilegível.');
 
         $this->assertSame(ProfessionalCredential::BADGE_UNVERIFIED, $credential->fresh()->publicBadge());
+    }
+
+    public function test_approve_is_refused_without_profession(): void
+    {
+        $credential = $this->submittedCredentialForNewPro();
+        $credential->update(['profession' => null, 'council' => null]);
+
+        $this->actingAs($this->admin())
+            ->postJson("/api/admin/credentials/{$credential->id}/approve")
+            ->assertStatus(422);
+
+        $fresh = $credential->fresh();
+        $this->assertSame(ProfessionalCredential::STATUS_SUBMITTED, $fresh->status);
+        $this->assertNull($fresh->verified_at);
+        $this->assertSame(0, AuditLog::where('action', 'credential.approved')->count());
+    }
+
+    public function test_approve_is_refused_without_registration_number(): void
+    {
+        $credential = $this->submittedCredentialForNewPro();
+
+        foreach ([null, ''] as $number) {
+            $credential->update(['registration_number' => $number]);
+
+            $this->actingAs($this->admin())
+                ->postJson("/api/admin/credentials/{$credential->id}/approve")
+                ->assertStatus(422);
+
+            $this->assertSame(ProfessionalCredential::STATUS_SUBMITTED, $credential->fresh()->status);
+        }
     }
 
     public function test_reject_requires_reason(): void
