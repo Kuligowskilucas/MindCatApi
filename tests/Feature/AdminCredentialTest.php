@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuditLog;
 use App\Models\CredentialDocument;
 use App\Models\ProfessionalCredential;
 use App\Models\User;
@@ -21,12 +22,14 @@ class AdminCredentialTest extends TestCase
         $pro = User::factory()->unverifiedPro()->create();
 
         return ProfessionalCredential::create([
-            'user_id'         => $pro->id,
-            'crp_number'      => '06/123456',
-            'crp_region'      => '06',
-            'epsi_registered' => true,
-            'status'          => ProfessionalCredential::STATUS_SUBMITTED,
-            'submitted_at'    => now(),
+            'user_id'             => $pro->id,
+            'profession'          => ProfessionalCredential::PROFESSION_PSYCHOLOGIST,
+            'council'             => ProfessionalCredential::COUNCIL_CRP,
+            'registration_number' => '06/123456',
+            'registration_region' => '06',
+            'epsi_registered'     => true,
+            'status'              => ProfessionalCredential::STATUS_SUBMITTED,
+            'submitted_at'        => now(),
         ]);
     }
 
@@ -75,11 +78,10 @@ class AdminCredentialTest extends TestCase
         $this->assertNotNull($fresh->next_review_at);
         $this->assertSame(ProfessionalCredential::METHOD_MANUAL, $fresh->verification_method);
 
-        // O gate da 5b agora libera o pro nas rotas clínicas.
-        $this->actingAs($credential->user)->getJson('/api/patients')->assertStatus(200);
+        $this->assertSame(['verified' => true, 'label' => 'Psicólogo(a)'], $fresh->publicBadge());
     }
 
-    public function test_admin_can_reject_with_reason_and_pro_stays_blocked(): void
+    public function test_admin_can_reject_with_reason_and_badge_stays_unverified(): void
     {
         $credential = $this->submittedCredentialForNewPro();
 
@@ -91,8 +93,37 @@ class AdminCredentialTest extends TestCase
             ->assertJsonPath('status', ProfessionalCredential::STATUS_REJECTED)
             ->assertJsonPath('rejection_reason', 'Documento ilegível.');
 
-        $this->actingAs($credential->user->fresh())
-            ->getJson('/api/patients')->assertStatus(403);
+        $this->assertSame(ProfessionalCredential::BADGE_UNVERIFIED, $credential->fresh()->publicBadge());
+    }
+
+    public function test_approve_is_refused_without_profession(): void
+    {
+        $credential = $this->submittedCredentialForNewPro();
+        $credential->update(['profession' => null, 'council' => null]);
+
+        $this->actingAs($this->admin())
+            ->postJson("/api/admin/credentials/{$credential->id}/approve")
+            ->assertStatus(422);
+
+        $fresh = $credential->fresh();
+        $this->assertSame(ProfessionalCredential::STATUS_SUBMITTED, $fresh->status);
+        $this->assertNull($fresh->verified_at);
+        $this->assertSame(0, AuditLog::where('action', 'credential.approved')->count());
+    }
+
+    public function test_approve_is_refused_without_registration_number(): void
+    {
+        $credential = $this->submittedCredentialForNewPro();
+
+        foreach ([null, ''] as $number) {
+            $credential->update(['registration_number' => $number]);
+
+            $this->actingAs($this->admin())
+                ->postJson("/api/admin/credentials/{$credential->id}/approve")
+                ->assertStatus(422);
+
+            $this->assertSame(ProfessionalCredential::STATUS_SUBMITTED, $credential->fresh()->status);
+        }
     }
 
     public function test_reject_requires_reason(): void
@@ -128,7 +159,7 @@ class AdminCredentialTest extends TestCase
             ->getJson("/api/admin/credentials/{$credential->id}")
             ->assertStatus(200)
             ->assertJsonStructure([
-                'credential' => ['id', 'status', 'crp_number'],
+                'credential' => ['id', 'status', 'profession', 'council', 'registration_number', 'registration_region', 'rqe_number'],
                 'documents'  => [['id', 'kind', 'original_name', 'url']],
             ]);
 

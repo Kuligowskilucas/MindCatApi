@@ -35,7 +35,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_mood(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $response = $this->actingAs($user)->postJson('/api/moods', $this->payload());
 
@@ -51,7 +51,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function register_returns_thought_and_behavior(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $response = $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 5,
@@ -69,7 +69,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_mood_twice_same_day(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 3,
@@ -89,7 +89,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function thought_is_required(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $payload = $this->payload();
         unset($payload['thought']);
@@ -102,7 +102,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function behavior_is_required(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $payload = $this->payload();
         unset($payload['behavior']);
@@ -115,7 +115,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function thought_and_behavior_are_limited_to_1000_characters(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'thought' => str_repeat('a', 1001),
@@ -129,7 +129,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function mood_level_must_be_between_1_and_5(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $this->actingAs($user)->postJson('/api/moods', $this->payload(['mood_level' => 0]))->assertStatus(422);
         $this->actingAs($user)->postJson('/api/moods', $this->payload(['mood_level' => 6]))->assertStatus(422);
@@ -139,7 +139,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function mood_level_is_required(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $payload = $this->payload();
         unset($payload['mood_level']);
@@ -153,7 +153,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_register_mood_with_feelings_and_they_come_back_in_index(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $response = $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 3,
@@ -177,7 +177,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function registering_mood_with_unknown_feeling_slug_fails(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $response = $this->actingAs($user)->postJson('/api/moods', $this->payload([
             'mood_level' => 3,
@@ -190,7 +190,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function registering_mood_with_more_than_five_feelings_fails(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $slugs = [];
         for ($i = 1; $i <= 6; $i++) {
@@ -210,7 +210,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function registering_mood_without_feelings_fails(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $payload = $this->payload();
         unset($payload['feelings']);
@@ -228,7 +228,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_list_moods(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         UserMoodTracking::create([
             'user_id'     => $user->id,
@@ -249,7 +249,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_filter_moods_by_date(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         UserMoodTracking::create([
             'user_id'     => $user->id,
@@ -273,7 +273,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function to_filter_includes_moods_recorded_later_that_day(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
 
         $day = Carbon::parse('2026-08-10');
 
@@ -299,8 +299,8 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_see_other_users_moods(): void
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
+        $user1 = User::factory()->patient()->create();
+        $user2 = User::factory()->patient()->create();
 
         UserMoodTracking::create([
             'user_id'     => $user2->id,
@@ -316,7 +316,7 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_delete_own_mood(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
         $mood = UserMoodTracking::create([
             'user_id'     => $user->id,
             'mood_level'  => 3,
@@ -332,8 +332,8 @@ class MoodTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_cannot_delete_other_users_mood(): void
     {
-        $user1 = User::factory()->create();
-        $user2 = User::factory()->create();
+        $user1 = User::factory()->patient()->create();
+        $user2 = User::factory()->patient()->create();
         $mood = UserMoodTracking::create([
             'user_id'     => $user2->id,
             'mood_level'  => 3,

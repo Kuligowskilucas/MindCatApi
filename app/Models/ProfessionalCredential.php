@@ -34,10 +34,36 @@ class ProfessionalCredential extends Model
     public const METHOD_OCR_ASSISTED = 'ocr_assisted';
     public const METHOD_API          = 'api';
 
+    public const PROFESSION_PSYCHOLOGIST = 'psychologist';
+    public const PROFESSION_PSYCHIATRIST = 'psychiatrist';
+
+    public const PROFESSIONS = [
+        self::PROFESSION_PSYCHOLOGIST,
+        self::PROFESSION_PSYCHIATRIST,
+    ];
+
+    public const COUNCIL_CRP = 'CRP';
+    public const COUNCIL_CRM = 'CRM';
+
+    public const COUNCILS = [
+        self::COUNCIL_CRP,
+        self::COUNCIL_CRM,
+    ];
+
+    public const COUNCIL_BY_PROFESSION = [
+        self::PROFESSION_PSYCHOLOGIST => self::COUNCIL_CRP,
+        self::PROFESSION_PSYCHIATRIST => self::COUNCIL_CRM,
+    ];
+
+    public const BADGE_UNVERIFIED = ['verified' => false, 'label' => 'Profissional'];
+
     protected $fillable = [
         'user_id',
-        'crp_number',
-        'crp_region',
+        'profession',
+        'council',
+        'registration_number',
+        'registration_region',
+        'rqe_number',
         'epsi_registered',
         'status',
         'rejection_reason',
@@ -78,9 +104,42 @@ class ProfessionalCredential extends Model
         return $this->hasMany(CredentialDocument::class, 'credential_id');
     }
 
-    /** Único estado que libera os poderes clínicos de `pro`. */
     public function isApproved(): bool
     {
         return $this->status === self::STATUS_APPROVED;
+    }
+
+    /** Aprovada e dentro de next_review_at + grace_days (null = nunca expira). */
+    public function isActive(): bool
+    {
+        if (!$this->isApproved()) {
+            return false;
+        }
+
+        if ($this->next_review_at === null) {
+            return true;
+        }
+
+        $graceDays = (int) config('mindcat.credential.grace_days');
+
+        return now()->lessThanOrEqualTo(
+            $this->next_review_at->copy()->addDays($graceDays)
+        );
+    }
+
+    /** Selo público exibido ao paciente. Nunca expõe número de registro. */
+    public function publicBadge(): array
+    {
+        if (!$this->isActive()) {
+            return self::BADGE_UNVERIFIED;
+        }
+
+        return match ($this->profession) {
+            self::PROFESSION_PSYCHOLOGIST => ['verified' => true, 'label' => 'Psicólogo(a)'],
+            self::PROFESSION_PSYCHIATRIST => filled($this->rqe_number)
+                ? ['verified' => true, 'label' => 'Psiquiatra']
+                : ['verified' => true, 'label' => 'Médico(a)'],
+            default => self::BADGE_UNVERIFIED,
+        };
     }
 }

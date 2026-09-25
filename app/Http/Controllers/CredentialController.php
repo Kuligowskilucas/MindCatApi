@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\Credential\StoreCredentialRequest;
+use App\Models\ProfessionalCredential;
 use App\Services\CredentialService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,10 +25,13 @@ class CredentialController extends Controller
     /** Primeira submissão: pending → submitted. */
     public function store(StoreCredentialRequest $request): JsonResponse
     {
+        $data = $request->validated();
+        $data['council'] = ProfessionalCredential::COUNCIL_BY_PROFESSION[$data['profession']];
+
         $credential = $this->credentialService->submit(
             $request->user(),
-            $request->validated(),
-            $request->file('crp_document'),
+            $data,
+            $request->file('registration_document'),
             $request->file('epsi_document'),
         );
 

@@ -25,7 +25,7 @@ class DiaryTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_create_diary_entry(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
         $this->giveDiaryPassword($user);   // Diario123
     
         $response = $this->actingAs($user)->postJson('/api/diary', [
@@ -124,7 +124,7 @@ class DiaryTest extends TestCase
     public function user_cannot_see_other_users_entries(): void
     {
         $user1 = $this->createPatientWithDiaryPassword();
-        $user2 = User::factory()->create();
+        $user2 = User::factory()->patient()->create();
 
         DiaryEntry::create(['user_id' => $user2->id, 'content' => 'Entrada do outro']);
 
@@ -168,7 +168,7 @@ class DiaryTest extends TestCase
     public function user_cannot_delete_other_users_entry(): void
     {
         $user1 = $this->createPatientWithDiaryPassword();
-        $user2 = User::factory()->create();
+        $user2 = User::factory()->patient()->create();
         $entry = DiaryEntry::create(['user_id' => $user2->id, 'content' => 'Do outro']);
 
         $response = $this->actingAs($user1)->deleteJson("/api/diary/{$entry->id}", [

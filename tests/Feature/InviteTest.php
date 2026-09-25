@@ -295,7 +295,7 @@ class InviteTest extends TestCase
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
-    public function unverified_pro_cannot_redeem(): void
+    public function unverified_pro_can_redeem_and_patient_sees_unverified_badge(): void
     {
         $pro = User::factory()->unverifiedPro()->create();
         $patient = $this->patientWithConsent();
@@ -303,7 +303,13 @@ class InviteTest extends TestCase
 
         $this->actingAs($pro)
             ->postJson('/api/invites/redeem', ['code' => $invite->code])
-            ->assertStatus(403);
+            ->assertSuccessful();
+
+        $this->actingAs($patient)
+            ->getJson('/api/my-professionals')
+            ->assertStatus(200)
+            ->assertJsonPath('data.0.id', $pro->id)
+            ->assertJsonPath('data.0.badge', ['verified' => false, 'label' => 'Profissional']);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]

@@ -114,34 +114,34 @@ class CredentialReviewTest extends TestCase
         $this->assertSame(ProfessionalCredential::STATUS_APPROVED, $this->statusOf($pro));
     }
 
-    public function test_gate_blocks_after_grace(): void
+    public function test_badge_is_unverified_after_grace_but_access_remains(): void
     {
         $pro = $this->proWithReview(now()->subDays(8));
 
-        $this->actingAs($pro)->getJson('/api/patients')
-            ->assertStatus(403)
-            ->assertJson(['code' => 'credential_not_approved']);
+        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertSame(ProfessionalCredential::BADGE_UNVERIFIED, $pro->credential->publicBadge());
     }
 
-    public function test_gate_allows_within_grace(): void
+    public function test_badge_is_verified_within_grace(): void
     {
         $pro = $this->proWithReview(now()->subDays(3));
 
-        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertTrue($pro->credential->isActive());
+        $this->assertTrue($pro->credential->publicBadge()['verified']);
     }
 
-    public function test_gate_allows_fresh_approval(): void
+    public function test_badge_is_verified_for_fresh_approval(): void
     {
         $pro = $this->proWithReview(now()->addYear());
 
-        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertTrue($pro->credential->publicBadge()['verified']);
     }
 
-    public function test_gate_allows_null_next_review_at(): void
+    public function test_badge_is_verified_for_null_next_review_at(): void
     {
         $pro = User::factory()->pro()->create();
 
-        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertTrue($pro->credential->publicBadge()['verified']);
     }
 
     public function test_expired_pro_can_resubmit(): void
@@ -152,11 +152,12 @@ class CredentialReviewTest extends TestCase
         $pro->credential->update(['status' => ProfessionalCredential::STATUS_EXPIRED]);
 
         $this->actingAs($pro)->postJson('/api/credentials', [
-            'crp_number'      => '06/123456',
-            'crp_region'      => '06',
-            'epsi_registered' => true,
-            'crp_document'    => UploadedFile::fake()->create('crp.pdf', 100, 'application/pdf'),
-            'epsi_document'   => UploadedFile::fake()->create('epsi.pdf', 100, 'application/pdf'),
+            'profession'            => ProfessionalCredential::PROFESSION_PSYCHOLOGIST,
+            'registration_number'   => '06/123456',
+            'registration_region'   => '06',
+            'epsi_registered'       => true,
+            'registration_document' => UploadedFile::fake()->create('crp.pdf', 100, 'application/pdf'),
+            'epsi_document'         => UploadedFile::fake()->create('epsi.pdf', 100, 'application/pdf'),
         ])->assertStatus(201)
           ->assertJsonPath('status', ProfessionalCredential::STATUS_SUBMITTED);
     }

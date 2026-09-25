@@ -25,11 +25,7 @@ class DataExportService
                 'created_at' => optional($user->created_at)->toIso8601String(),
             ],
             'profile' => $profile ? [
-                'treatment_type'                  => $profile->treatment_type,
-                'use_ai'                          => $profile->use_ai,
-                'tdah_reminder'                   => $profile->tdah_reminder,
                 'push_notifications'              => $profile->push_notifications,
-                'progress_bar'                    => $profile->progress_bar,
                 'consent_share_with_professional' => $profile->consent_share_with_professional,
             ] : null,
             'moods' => $user->moods()

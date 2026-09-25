@@ -27,8 +27,10 @@ class UserFactory extends Factory
         return $this->state(fn () => ['role' => 'pro'])
             ->afterCreating(function ($user) {
                 $user->credential()->create([
-                    'crp_number'          => '06/000000',
-                    'crp_region'          => '06',
+                    'profession'          => \App\Models\ProfessionalCredential::PROFESSION_PSYCHOLOGIST,
+                    'council'             => \App\Models\ProfessionalCredential::COUNCIL_CRP,
+                    'registration_number' => '06/000000',
+                    'registration_region' => '06',
                     'epsi_registered'     => true,
                     'status'              => \App\Models\ProfessionalCredential::STATUS_APPROVED,
                     'verification_method' => \App\Models\ProfessionalCredential::METHOD_MANUAL,
@@ -39,7 +41,6 @@ class UserFactory extends Factory
 
     public function unverifiedPro(): static
     {
-        // Pro sem credencial: para testar o gate pro-verified e o fluxo de submissão.
         return $this->state(fn () => ['role' => 'pro']);
     }
 

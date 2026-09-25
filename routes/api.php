@@ -42,9 +42,6 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
 
     Route::get('/profile', [ProfileController::class, 'show']);
     Route::put('/profile', [ProfileController::class, 'update']);
-    Route::put('/profile/diary-password', [ProfileController::class, 'setDiaryPassword'])
-        ->middleware('throttle:5,1');
-
     Route::put('/profile/two-factor', [ProfileController::class, 'setTwoFactor'])
         ->middleware('throttle:5,1');
 
@@ -54,23 +51,31 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
 
     Route::get('/me', [UserController::class, 'me']);
 
-    Route::post('/diary', [DiaryController::class, 'store']);
-    Route::post('/diary/list', [DiaryController::class, 'index'])->middleware('throttle:5,1');
-    Route::delete('/diary/{id}', [DiaryController::class, 'destroy'])->middleware('throttle:5,1');
-
-    Route::post('/moods', [MoodController::class, 'store']);
-    Route::get('/moods',  [MoodController::class, 'index']);
-    Route::delete('/moods/{id}', [MoodController::class, 'destroy']);
-
     Route::get('/feelings', [FeelingController::class, 'index']);
 
     Route::get('/tasks', [TaskController::class, 'index']);
-    Route::patch('/tasks/{task}/done', [TaskController::class, 'markDone']);
 
     Route::middleware('role:patient')->group(function () {
+        Route::put('/profile/diary-password', [ProfileController::class, 'setDiaryPassword'])
+            ->middleware('throttle:5,1');
+
+        Route::post('/diary', [DiaryController::class, 'store']);
+        Route::post('/diary/list', [DiaryController::class, 'index'])->middleware('throttle:5,1');
+        Route::delete('/diary/{id}', [DiaryController::class, 'destroy'])->middleware('throttle:5,1');
+
+        Route::post('/moods', [MoodController::class, 'store']);
+        Route::get('/moods',  [MoodController::class, 'index']);
+        Route::delete('/moods/{id}', [MoodController::class, 'destroy']);
+
+        Route::patch('/tasks/{task}/done', [TaskController::class, 'markDone']);
+
         Route::get('/invites', [InviteController::class, 'index']);
         Route::post('/invites', [InviteController::class, 'store'])->middleware('throttle:10,1');
         Route::delete('/invites', [InviteController::class, 'destroy']);
+
+        Route::get('/my-professionals', [LinkController::class, 'indexProfessionals']);
+        Route::delete('/my-professionals/{proId}', [LinkController::class, 'destroyProfessional'])
+            ->whereNumber('proId');
     });
 
     Route::middleware('role:pro')->group(function () {
@@ -87,7 +92,7 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
         Route::get('/audit-logs', [AuditLogController::class, 'index']);
     });
 
-    Route::middleware(['role:pro', 'pro.verified'])->group(function () {
+    Route::middleware('role:pro')->group(function () {
         Route::get('/patients', [LinkController::class, 'indexPatients']);
         Route::delete('/links/{patientId}', [LinkController::class, 'destroy']);
         Route::post('/invites/redeem', [InviteController::class, 'redeem'])

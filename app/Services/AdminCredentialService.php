@@ -60,6 +60,10 @@ class AdminCredentialService
     {
         $this->assertDecidable($credential);
 
+        if (blank($credential->profession) || blank($credential->registration_number)) {
+            throw new HttpException(422, 'A credencial precisa de profissão e número de registro para ser aprovada.');
+        }
+
         $credential->update([
             'status'              => ProfessionalCredential::STATUS_APPROVED,
             'rejection_reason'    => null,

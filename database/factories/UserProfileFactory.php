@@ -14,11 +14,7 @@ class UserProfileFactory extends Factory
     {
         return [
             'user_id'                          => User::factory(),
-            'use_ai'                           => false,
-            'treatment_type'                   => 'pre_defined',
-            'tdah_reminder'                    => 0,
             'push_notifications'               => 1,
-            'progress_bar'                     => 0,
             'consent_share_with_professional'  => false,
         ];
     }
