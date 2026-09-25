@@ -12,19 +12,12 @@ class UserProfile extends Model
 
     protected $fillable = [
         'user_id',
-        'use_ai',
-        'treatment_type',
-        'tdah_reminder',
         'push_notifications',
-        'progress_bar',
         'consent_share_with_professional',
     ];
 
     protected $casts = [
-        'use_ai'                          => 'boolean',
-        'tdah_reminder'                   => 'boolean',
         'push_notifications'              => 'boolean',
-        'progress_bar'                    => 'boolean',
         'consent_share_with_professional' => 'boolean',
     ];
 

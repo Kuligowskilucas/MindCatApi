@@ -18,11 +18,7 @@ class ProfileSeeder extends Seeder
             $profile = UserProfile::firstOrCreate(
                 ['user_id' => $patient->id],
                 [
-                    'use_ai'                          => fake()->boolean(30),
-                    'treatment_type'                  => fake()->randomElement(['pre_defined', 'ai_based']),
-                    'tdah_reminder'                   => fake()->boolean(40) ? 1 : 0,
                     'push_notifications'              => 1,
-                    'progress_bar'                    => fake()->boolean(50) ? 1 : 0,
                     'consent_share_with_professional' => $index < 5,
                 ]
             );
