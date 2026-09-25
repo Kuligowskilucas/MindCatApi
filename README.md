@@ -1,14 +1,16 @@
 # MindCat API
 
-REST API for MindCat, a mental health continuity platform that connects patients and psychologists between therapy sessions. The API is the core of the product: the web client and the (currently frozen) mobile client are two consumers of the same backend.
+REST API for MindCat, a mental health continuity platform that connects patients and professionals (psychologists and psychiatrists) between therapy sessions. The API is the core of the product: the web client and the (currently frozen) mobile client are two consumers of the same backend.
 
-Built with Laravel 13 and Laravel Sanctum. Test suite covers 204 cases running against SQLite in memory.
+Built with Laravel 13 and Laravel Sanctum. The test suite runs against SQLite in memory.
 
 ## What it does
 
-The API handles authentication, patient and professional accounts, daily mood tracking, an encrypted personal diary, therapeutic tasks, consent-based links between psychologists and patients, professional credential verification, and an admin review panel for those credentials.
+The API handles authentication, patient and professional accounts, daily mood tracking, an encrypted personal diary, therapeutic tasks, consent-based links between professionals (psychologists and psychiatrists) and patients, professional credential verification, and an admin review panel for those credentials.
 
-Access is separated by role. A `patient` records mood and diary entries and completes tasks. A `pro` links to patients, reads a clinical summary, and assigns tasks, but only after their professional credential has been reviewed and approved. An `admin` reviews the credential queue.
+Access is separated by role. A `patient` records mood and diary entries and completes tasks. A `pro` links to patients, reads a clinical summary, and assigns tasks. An `admin` reviews the credential queue.
+
+Credential approval does not gate access. Instead, each professional carries a public badge that patients see when listing their linked professionals. The badge reads "Psicólogo(a)" for an active psychologist credential, "Psiquiatra" for an active psychiatrist credential with an RQE (specialist registration), and "Médico(a)" for an active psychiatrist credential without one. A credential is active when it is approved and still within its review date plus the grace period. Any other case shows the unverified "Profissional" badge. The badge never exposes the registration number or the professional's email, and a patient can end a link at any time, which is recorded in the audit log.
 
 ## Stack
 
@@ -30,7 +32,7 @@ Browser storage such as `localStorage` is deliberately not used for tokens, sinc
 
 Diary content is encrypted at rest with a dedicated key that is separate from the application key, so that compromising one does not expose the other. Each row records its encryption version to support key migration without downtime.
 
-The diary is protected by a password that is separate from the account password and is never stored in plain text. The account owner and the linked psychologist cannot read diary content without that password.
+The diary is protected by a password that is separate from the account password and is never stored in plain text. The account owner and the linked professional cannot read diary content without that password.
 
 Account deletion follows LGPD requirements. Diary entries and mood logs are permanently deleted, tasks are preserved as clinical records, links are deactivated, and the user record is anonymized and then soft-deleted.
 
