@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\ProfessionalCredential;
 use App\Models\ProPatientLink;
 use App\Models\User;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -39,7 +40,42 @@ class LinkService
 
     public function destroy(User $pro, int $patientId): void
     {
-        ProPatientLink::where('pro_id', $pro->id)
+        $this->deactivate($pro->id, $patientId);
+    }
+
+    /** Pros com vínculo ativo, só com o selo público: sem email nem número de registro. */
+    public function indexProfessionals(User $patient): array
+    {
+        return $patient->professionals()
+            ->with('credential')
+            ->orderBy('users.name')
+            ->get()
+            ->map(fn (User $pro) => [
+                'id'    => $pro->id,
+                'name'  => $pro->name,
+                'badge' => $pro->credential?->publicBadge() ?? ProfessionalCredential::BADGE_UNVERIFIED,
+            ])
+            ->all();
+    }
+
+    /** Escopado pelo próprio paciente: um vínculo de outro paciente nunca é encontrado. */
+    public function destroyForPatient(User $patient, int $proId): ?ProPatientLink
+    {
+        $link = ProPatientLink::where('pro_id', $proId)
+            ->where('patient_id', $patient->id)
+            ->where('active', true)
+            ->first();
+
+        if ($link) {
+            $this->deactivate($proId, $patient->id);
+        }
+
+        return $link;
+    }
+
+    private function deactivate(int $proId, int $patientId): void
+    {
+        ProPatientLink::where('pro_id', $proId)
             ->where('patient_id', $patientId)
             ->update(['active' => false]);
     }

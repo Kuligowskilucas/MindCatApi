@@ -41,7 +41,6 @@ class UserFactory extends Factory
 
     public function unverifiedPro(): static
     {
-        // Pro sem credencial: para testar o gate pro-verified e o fluxo de submissão.
         return $this->state(fn () => ['role' => 'pro']);
     }
 

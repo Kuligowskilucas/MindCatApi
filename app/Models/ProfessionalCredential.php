@@ -55,6 +55,8 @@ class ProfessionalCredential extends Model
         self::PROFESSION_PSYCHIATRIST => self::COUNCIL_CRM,
     ];
 
+    public const BADGE_UNVERIFIED = ['verified' => false, 'label' => 'Profissional'];
+
     protected $fillable = [
         'user_id',
         'profession',
@@ -102,10 +104,42 @@ class ProfessionalCredential extends Model
         return $this->hasMany(CredentialDocument::class, 'credential_id');
     }
 
-    /** Único estado que libera os poderes clínicos de `pro`. */
     public function isApproved(): bool
     {
         return $this->status === self::STATUS_APPROVED;
     }
 
+    /** Aprovada e dentro de next_review_at + grace_days (null = nunca expira). */
+    public function isActive(): bool
+    {
+        if (!$this->isApproved()) {
+            return false;
+        }
+
+        if ($this->next_review_at === null) {
+            return true;
+        }
+
+        $graceDays = (int) config('mindcat.credential.grace_days');
+
+        return now()->lessThanOrEqualTo(
+            $this->next_review_at->copy()->addDays($graceDays)
+        );
+    }
+
+    /** Selo público exibido ao paciente. Nunca expõe número de registro. */
+    public function publicBadge(): array
+    {
+        if (!$this->isActive()) {
+            return self::BADGE_UNVERIFIED;
+        }
+
+        return match ($this->profession) {
+            self::PROFESSION_PSYCHOLOGIST => ['verified' => true, 'label' => 'Psicólogo(a)'],
+            self::PROFESSION_PSYCHIATRIST => filled($this->rqe_number)
+                ? ['verified' => true, 'label' => 'Psiquiatra']
+                : ['verified' => true, 'label' => 'Médico(a)'],
+            default => self::BADGE_UNVERIFIED,
+        };
+    }
 }

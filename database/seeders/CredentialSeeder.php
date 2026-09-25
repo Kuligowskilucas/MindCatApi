@@ -11,8 +11,6 @@ class CredentialSeeder extends Seeder
 {
     public function run(): void
     {
-        // Marca os profissionais de teste como APROVADOS, para que o gate
-        // `pro-verified` (Fase 5b) não trave os logins de smoke test.
         $pros = User::where('role', Role::Pro)->get();
 
         foreach ($pros as $index => $pro) {

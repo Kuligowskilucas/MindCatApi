@@ -72,6 +72,10 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
         Route::get('/invites', [InviteController::class, 'index']);
         Route::post('/invites', [InviteController::class, 'store'])->middleware('throttle:10,1');
         Route::delete('/invites', [InviteController::class, 'destroy']);
+
+        Route::get('/my-professionals', [LinkController::class, 'indexProfessionals']);
+        Route::delete('/my-professionals/{proId}', [LinkController::class, 'destroyProfessional'])
+            ->whereNumber('proId');
     });
 
     Route::middleware('role:pro')->group(function () {
@@ -88,7 +92,7 @@ Route::middleware(['auth:sanctum', 'token.access', 'log.user'])->group(function 
         Route::get('/audit-logs', [AuditLogController::class, 'index']);
     });
 
-    Route::middleware(['role:pro', 'pro.verified'])->group(function () {
+    Route::middleware('role:pro')->group(function () {
         Route::get('/patients', [LinkController::class, 'indexPatients']);
         Route::delete('/links/{patientId}', [LinkController::class, 'destroy']);
         Route::post('/invites/redeem', [InviteController::class, 'redeem'])

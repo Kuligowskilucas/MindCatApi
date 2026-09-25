@@ -77,11 +77,10 @@ class AdminCredentialTest extends TestCase
         $this->assertNotNull($fresh->next_review_at);
         $this->assertSame(ProfessionalCredential::METHOD_MANUAL, $fresh->verification_method);
 
-        // O gate da 5b agora libera o pro nas rotas clínicas.
-        $this->actingAs($credential->user)->getJson('/api/patients')->assertStatus(200);
+        $this->assertSame(['verified' => true, 'label' => 'Psicólogo(a)'], $fresh->publicBadge());
     }
 
-    public function test_admin_can_reject_with_reason_and_pro_stays_blocked(): void
+    public function test_admin_can_reject_with_reason_and_badge_stays_unverified(): void
     {
         $credential = $this->submittedCredentialForNewPro();
 
@@ -93,8 +92,7 @@ class AdminCredentialTest extends TestCase
             ->assertJsonPath('status', ProfessionalCredential::STATUS_REJECTED)
             ->assertJsonPath('rejection_reason', 'Documento ilegível.');
 
-        $this->actingAs($credential->user->fresh())
-            ->getJson('/api/patients')->assertStatus(403);
+        $this->assertSame(ProfessionalCredential::BADGE_UNVERIFIED, $credential->fresh()->publicBadge());
     }
 
     public function test_reject_requires_reason(): void

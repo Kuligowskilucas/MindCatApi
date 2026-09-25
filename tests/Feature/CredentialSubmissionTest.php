@@ -37,21 +37,25 @@ class CredentialSubmissionTest extends TestCase
         ], $overrides);
     }
 
-    public function test_unverified_pro_is_blocked_from_clinical_routes(): void
+    public function test_unverified_pro_reaches_clinical_routes_with_unverified_badge(): void
     {
         $pro = User::factory()->unverifiedPro()->create();
 
-        $this->actingAs($pro)->getJson('/api/patients')
-            ->assertStatus(403)
-            ->assertJson(['code' => 'credential_not_approved']);
+        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+
+        $this->assertNull($pro->credential);
     }
 
-    public function test_verified_pro_passes_clinical_routes(): void
+    public function test_verified_pro_passes_clinical_routes_with_verified_badge(): void
     {
-        // pro() já cria credencial aprovada por padrão nos testes.
         $pro = User::factory()->pro()->create();
 
         $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+
+        $this->assertSame(
+            ['verified' => true, 'label' => 'Psicólogo(a)'],
+            $pro->credential->publicBadge()
+        );
     }
 
     public function test_patient_cannot_access_credential_routes(): void
@@ -268,7 +272,7 @@ class CredentialSubmissionTest extends TestCase
             ->assertStatus(422)->assertJsonValidationErrors('registration_document');
     }
 
-    public function test_submitting_does_not_immediately_grant_clinical_access(): void
+    public function test_submitting_does_not_grant_verified_badge(): void
     {
         Storage::fake('local');
         $pro = User::factory()->unverifiedPro()->create();
@@ -276,7 +280,10 @@ class CredentialSubmissionTest extends TestCase
         $this->actingAs($pro)->postJson('/api/credentials', $this->psychologistPayload())
             ->assertStatus(201);
 
-        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(403);
+        $this->assertSame(
+            ProfessionalCredential::BADGE_UNVERIFIED,
+            $pro->credential()->first()->publicBadge()
+        );
     }
 
     public function test_cannot_submit_when_already_approved(): void

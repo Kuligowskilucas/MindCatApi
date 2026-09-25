@@ -114,34 +114,34 @@ class CredentialReviewTest extends TestCase
         $this->assertSame(ProfessionalCredential::STATUS_APPROVED, $this->statusOf($pro));
     }
 
-    public function test_gate_blocks_after_grace(): void
+    public function test_badge_is_unverified_after_grace_but_access_remains(): void
     {
         $pro = $this->proWithReview(now()->subDays(8));
 
-        $this->actingAs($pro)->getJson('/api/patients')
-            ->assertStatus(403)
-            ->assertJson(['code' => 'credential_not_approved']);
+        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertSame(ProfessionalCredential::BADGE_UNVERIFIED, $pro->credential->publicBadge());
     }
 
-    public function test_gate_allows_within_grace(): void
+    public function test_badge_is_verified_within_grace(): void
     {
         $pro = $this->proWithReview(now()->subDays(3));
 
-        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertTrue($pro->credential->isActive());
+        $this->assertTrue($pro->credential->publicBadge()['verified']);
     }
 
-    public function test_gate_allows_fresh_approval(): void
+    public function test_badge_is_verified_for_fresh_approval(): void
     {
         $pro = $this->proWithReview(now()->addYear());
 
-        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertTrue($pro->credential->publicBadge()['verified']);
     }
 
-    public function test_gate_allows_null_next_review_at(): void
+    public function test_badge_is_verified_for_null_next_review_at(): void
     {
         $pro = User::factory()->pro()->create();
 
-        $this->actingAs($pro)->getJson('/api/patients')->assertStatus(200);
+        $this->assertTrue($pro->credential->publicBadge()['verified']);
     }
 
     public function test_expired_pro_can_resubmit(): void
