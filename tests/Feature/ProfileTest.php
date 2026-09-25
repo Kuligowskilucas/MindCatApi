@@ -75,7 +75,7 @@ class ProfileTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_set_diary_password_first_time(): void
     {
-        $user = User::factory()->create();   // sem perfil
+        $user = User::factory()->patient()->create();   // sem perfil
 
         $response = $this->actingAs($user)->putJson('/api/profile/diary-password', [
             'new_password' => 'Diario123',
@@ -88,7 +88,7 @@ class ProfileTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function user_can_change_diary_password_with_current(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
         $this->giveDiaryPassword($user, 'SenhaAntiga1');
 
         $response = $this->actingAs($user)->putJson('/api/profile/diary-password', [
@@ -102,7 +102,7 @@ class ProfileTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function change_diary_password_fails_with_wrong_current(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
         $this->giveDiaryPassword($user, 'SenhaAntiga1');
 
         $response = $this->actingAs($user)->putJson('/api/profile/diary-password', [
@@ -116,7 +116,7 @@ class ProfileTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function diary_password_must_be_strong(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->patient()->create();
         UserProfile::create(['user_id' => $user->id]);
 
         $response = $this->actingAs($user)->putJson('/api/profile/diary-password', [
